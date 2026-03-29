@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+{% block title %}CoScribe — Collaborative Notes{% endblock %}
+
+{% block internal_css %}
+<style>
+* { box-sizing: border-box; }
+
+/* override base bg */
+body { background: var(--cs-bg); overflow-x: hidden; }
+
+/* ── NAV ── */
+.land-nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 58px;
+  background: var(--cs-nav-bg);
+  border-bottom: 1px solid var(--cs-nav-rim);
+  box-shadow: var(--cs-nav-shadow);
+  backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+}
+.land-nav-links { display: flex; align-items: center; gap: 8px; }
+.land-nav-links a {
+  font-size: .85rem; font-weight: 500; color: var(--cs-ink-3);
+  text-decoration: none; padding: 7px 12px; border-radius: 7px;
+  transition: background .2s, color .2s;
+}
+.land-nav-links a:hover { background: var(--cs-bg-2); color: var(--cs-ink); }
+
+/* ── HERO ── */
+.land-hero {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; padding: 100px 24px 80px;
+  position: relative; overflow: hidden;
+}
+.land-hero::before {
+  content: '';
+  position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+  width: 700px; height: 700px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(224,90,71,.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.land-kicker {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: .72rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--cs-red); background: var(--cs-red-faint);
+  border: 1px solid var(--cs-red-rim); border-radius: 20px;
+  padding: 5px 14px; margin-bottom: 24px;
+}
+.land-kicker-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--cs-red); animation: livePulse 2s ease-in-out infinite; }
+
+.land-h1 {
+  font-family: var(--cs-font-d);
+  font-size: clamp(2.4rem, 6vw, 4.2rem);
+  font-weight: 800; line-height: 1.08; letter-spacing: -.03em;
+  color: var(--cs-ink); max-width: 720px; margin-bottom: 22px;
+}
+.land-h1 em { color: var(--cs-red); font-style: italic; }
+
+.land-sub {
+  font-size: 1.05rem; line-height: 1.7; color: var(--cs-ink-2);
+  max-width: 520px; margin-bottom: 38px;
+}
+
+.land-ctas { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center; }
+
+.land-note-count {
+  margin-top: 20px; font-size: .78rem; color: var(--cs-ink-3);
+}
+.land-note-count strong { color: var(--cs-ink-2); }
+
+/* ── PREVIEW STRIP ── */
+.land-preview {
+  padding: 0 40px 80px;
+  max-width: 1100px; margin: 0 auto;
+}
+
+.land-preview-label {
+  text-align: center; font-size: .72rem; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--cs-ink-3);
+  margin-bottom: 28px;
+}
+
+.land-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.land-card {
+  background: var(--cs-white); border: 1.5px solid var(--cs-border);
+  border-radius: var(--cs-r); padding: 22px 24px; cursor: pointer;
+  position: relative; overflow: hidden;
+  transition: border-color var(--cs-dur) var(--cs-ease),
+              box-shadow   var(--cs-dur) var(--cs-ease),
+              transform .14s;
+  text-decoration: none; display: block;
+}
+.land-card::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px;
+  background: transparent; transition: background var(--cs-dur) var(--cs-ease);
+}
+.land-card:hover { border-color: var(--cs-red-rim); box-shadow: 0 8px 28px rgba(0,0,0,.09); transform: translateY(-3px); }
+.land-card:hover::before { background: var(--cs-red); }
+
+.land-card-tag {
+  font-size: .68rem; font-weight: 600; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--cs-red);
+  font-family: var(--cs-font-m); margin-bottom: 10px;
+}
+.land-card-title {
+  font-family: var(--cs-font-d); font-size: 1.1rem; font-weight: 700;
+  color: var(--cs-ink); margin-bottom: 8px; line-height: 1.3;
+}
+.land-card-excerpt { font-size: .8rem; color: var(--cs-ink-3); line-height: 1.6; }
+.land-card-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--cs-border);
+  font-size: .72rem; color: var(--cs-ink-3);
+}
+.land-card-avatars { display: flex; align-items: center; }
+
+/* ── FEATURES ── */
+.land-features {
+  background: var(--cs-white); border-top: 1.5px solid var(--cs-border);
+  border-bottom: 1.5px solid var(--cs-border);
+  padding: 80px 40px;
+}
+.land-features-inner {
+  max-width: 1000px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 40px;
+}
+.land-feat-head {
+  grid-column: 1/-1; text-align: center; margin-bottom: 16px;
+}
+.land-feat-head h2 { font-family: var(--cs-font-d); font-size: 2rem; font-weight: 800; color: var(--cs-ink); }
+.land-feat-head p  { font-size: .9rem; color: var(--cs-ink-2); margin-top: 8px; }
+
+.land-feat {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.land-feat-icon {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: var(--cs-red-faint); border: 1.5px solid var(--cs-red-rim);
+  display: flex; align-items: center; justify-content: center; color: var(--cs-red);
+}
+.land-feat-title { font-size: .95rem; font-weight: 700; color: var(--cs-ink); }
+.land-feat-desc  { font-size: .82rem; color: var(--cs-ink-3); line-height: 1.6; }
+
+/* ── FOOTER ── */
+.land-footer {
+  text-align: center; padding: 32px 24px;
+  font-size: .78rem; color: var(--cs-ink-3); border-top: 1px solid var(--cs-border);
+}
+.land-footer a { color: var(--cs-red); text-decoration: none; }
+
+/* ── RESPONSIVE ── */
+@media(max-width: 640px) {
+  .land-nav { padding: 0 16px; }
+  .land-hero { padding: 64px 16px 60px; }
+  .land-preview, .land-features { padding-left: 16px; padding-right: 16px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- NAV -->
+<nav class="land-nav">
+  <a href="/" class="cs-logo">
+    <img class="cs-logo-img" src="{{ url_for('static', path='img/logo.png') }}" alt="CoScribe"
+         onerror="this.style.display='none';this.nextElementSibling.classList.add('visible')"/>
+    <span class="cs-logo-text">
+      <span class="cs-logo-co">Co</span><span class="cs-logo-scribe">Scribe.</span>
+    </span>
+  </a>
+  <div class="land-nav-links">
+    <a href="/login">Sign in</a>
+    <a href="/register" class="cs-btn-red" style="padding:7px 18px;font-size:.82rem;">Get started free</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="land-hero">
+  <div class="land-kicker">
+    <span class="land-kicker-dot"></span>
+    Real-time collaborative notes
+  </div>
+  <h1 class="land-h1">
+    Take notes together,<br><em>learn together.</em>
+  </h1>
+  <p class="land-sub">
+    CoScribe brings your class together on one page. Share lecture notes, add audio recordings,
+    highlight key concepts — all in real time.
+  </p>
+  <div class="land-ctas">
+    <a href="/register" class="cs-btn-red">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      Start for free
+    </a>
+    <a href="/login" class="cs-btn-outline">Sign in</a>
+  </div>
+  <p class="land-note-count">Join <strong>students already collaborating</strong> on CoScribe.</p>
+</section>
+
+<!-- PREVIEW CARDS -->
+<section class="land-preview">
+  <div class="land-preview-label">Recent community notes</div>
+  <div class="land-cards">
+
+    <div class="land-card">
+      <div class="land-card-tag">INFO 2602</div>
+      <div class="land-card-title">Week 9 — REST APIs &amp; Flask</div>
+      <div class="land-card-excerpt">HTTP methods, status codes, resource design. CRUD with Flask-RESTful and SQLAlchemy with JWT authentication…</div>
+      <div class="land-card-foot">
+        <div class="land-card-avatars">
+          <div class="cs-av" style="background:#c0392b;margin-left:0">A</div>
+          <div class="cs-av" style="background:#5b7fa6">M</div>
+          <div class="cs-av" style="background:#8e44ad">K</div>
+        </div>
+        <span>3 collaborators · 2h ago</span>
+      </div>
+    </div>
+
+    <div class="land-card">
+      <div class="land-card-tag">COMP 2605</div>
+      <div class="land-card-title">Cache Memory &amp; Locality</div>
+      <div class="land-card-excerpt">Spatial and temporal locality, direct-mapped vs set-associative caches, write-through vs write-back strategies…</div>
+      <div class="land-card-foot">
+        <div class="land-card-avatars">
+          <div class="cs-av" style="background:#27ae60;margin-left:0">J</div>
+          <div class="cs-av" style="background:#e67e22">T</div>
+        </div>
+        <span>2 collaborators · 1d ago</span>
+      </div>
+    </div>
+
+    <div class="land-card">
+      <div class="land-card-tag">MATH 2110</div>
+      <div class="land-card-title">Eigenvalues &amp; Eigenvectors</div>
+      <div class="land-card-excerpt">Characteristic polynomial, diagonalisation, applications to systems of differential equations and Markov chains…</div>
+      <div class="land-card-foot">
+        <div class="land-card-avatars">
+          <div class="cs-av" style="background:#8e44ad;margin-left:0">R</div>
+        </div>
+        <span>1 collaborator · 3d ago</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="land-features">
+  <div class="land-features-inner">
+    <div class="land-feat-head">
+      <h2>Everything you need in one place</h2>
+      <p>Built for students, by students.</p>
+    </div>
+
+    <div class="land-feat">
+      <div class="land-feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div class="land-feat-title">Real-time collaboration</div>
+      <div class="land-feat-desc">See your classmates typing live. No more waiting to merge changes.</div>
+    </div>
+
+    <div class="land-feat">
+      <div class="land-feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a4 4 0 0 1 4 4v7a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4z"/><path d="M5 10a7 7 0 0 0 14 0"/></svg>
+      </div>
+      <div class="land-feat-title">Audio recordings</div>
+      <div class="land-feat-desc">Record the lecturer mid-note. Clips attach directly to your notes.</div>
+    </div>
+
+    <div class="land-feat">
+      <div class="land-feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 11-6 6v3h3l6-6"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg>
+      </div>
+      <div class="land-feat-title">Smart highlighting</div>
+      <div class="land-feat-desc">Highlight key terms in five colours to build your own study system.</div>
+    </div>
+
+    <div class="land-feat">
+      <div class="land-feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      </div>
+      <div class="land-feat-title">Image &amp; media</div>
+      <div class="land-feat-desc">Paste diagrams and screenshots directly into your notes.</div>
+    </div>
+
+    <div class="land-feat">
+      <div class="land-feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/></svg>
+      </div>
+      <div class="land-feat-title">Night mode</div>
+      <div class="land-feat-desc">Late night study session? One click and the whole app goes dark.</div>
+    </div>
+
+    <div class="land-feat">
+      <div class="land-feat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      </div>
+      <div class="land-feat-title">Organised by course</div>
+      <div class="land-feat-desc">All your notes grouped by course, searchable in seconds.</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="land-footer">
+  <p>© 2026 CoScribe · <a href="/login">Sign in</a> · <a href="/register">Register</a></p>
+</footer>
+
+{% endblock %}
