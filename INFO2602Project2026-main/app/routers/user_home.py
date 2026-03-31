@@ -14,7 +14,7 @@ async def user_home_view(
 ):
     return templates.TemplateResponse(
         request=request, 
-        name="app.html",
+        name="home.html",
         context={
             "user": user
         }
