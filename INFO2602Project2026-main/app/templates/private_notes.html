@@ -1,0 +1,368 @@
+{% extends "authenticated-base.html" %}
+{% block title %}CoScribe — Private Notes{% endblock %}
+
+{% block external_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=DM+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,600;1,400&family=Nunito:wght@400;600;700;800&family=Raleway:wght@400;600;700;800&family=Poppins:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+{% endblock %}
+
+{% block additional_styles %}
+<style>
+#sidebar, .navbar { display: none !important; }
+#content { padding: 0 !important; background: #f6f4f0 !important; }
+body { overflow-x: hidden; padding-bottom: 80px; }
+</style>
+{% endblock %}
+
+{% block internal_css %}
+<style>
+:root {
+  --bg:#f6f4f0; --bg2:#edeae3; --white:#ffffff;
+  --coral:#FF6B5B; --coral-dk:#e5503f; --coral-lt:#fff0ee;
+  --ink:#17110d; --ink2:#4a3f35; --ink3:#9c9088;
+  --sh-sm:0 2px 14px rgba(0,0,0,.07); --sh-md:0 6px 30px rgba(0,0,0,.11); --sh-lg:0 14px 50px rgba(0,0,0,.14);
+  --nav-bg:rgba(246,244,240,0.93); --nav-sh:0 1px 0 rgba(0,0,0,.05),0 4px 18px rgba(0,0,0,.06);
+  --pill:999px; --r-lg:22px; --r-xl:28px;
+  --dur:0.2s; --ease:cubic-bezier(0.4,0,0.2,1);
+  --font:'Montserrat',sans-serif; --mono:'DM Mono',monospace;
+}
+[data-theme="dark"] {
+  --bg:#100e0b; --bg2:#1a1814; --white:#1e1c17; --coral-lt:#241310;
+  --ink:#f0ebe3; --ink2:#c4b8ac; --ink3:#786e64;
+  --sh-sm:0 2px 14px rgba(0,0,0,.28); --sh-md:0 6px 30px rgba(0,0,0,.38); --sh-lg:0 14px 50px rgba(0,0,0,.48);
+  --nav-bg:rgba(16,14,11,0.97); --nav-sh:0 1px 0 rgba(255,255,255,.04),0 4px 18px rgba(0,0,0,.45);
+}
+.cs-icon-sun{display:none} .cs-icon-moon{display:block}
+[data-theme="dark"] .cs-icon-sun{display:block} [data-theme="dark"] .cs-icon-moon{display:none}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+.pn-root{font-family:var(--font);background:var(--bg);color:var(--ink);min-height:100vh;transition:background var(--dur),color var(--dur);-webkit-font-smoothing:antialiased}
+
+/* NAV */
+.pn-nav{position:sticky;top:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:58px;background:var(--nav-bg);box-shadow:var(--nav-sh);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);transition:background var(--dur)}
+.pn-nav-l{display:flex;align-items:center;gap:10px}
+.pn-nav-r{display:flex;align-items:center;gap:8px}
+.cs-logo{text-decoration:none;display:flex;align-items:center}
+.cs-logo-img{height:28px;width:auto;object-fit:contain}
+.cs-logo-text{display:none;align-items:center}
+.cs-logo-text.show{display:flex}
+.cs-logo-co{font-size:1.15rem;font-weight:600;color:var(--ink3)}
+.cs-logo-scribe{font-size:1.15rem;font-weight:900;color:var(--coral);letter-spacing:-.02em}
+.cs-icon-btn{width:36px;height:36px;border:none;background:transparent;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink3);transition:background var(--dur),color var(--dur)}
+.cs-icon-btn:hover{background:var(--bg2);color:var(--ink)}
+.cs-av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.67rem;font-weight:700;box-shadow:0 0 0 2px var(--white)}
+
+/* HEADER BANNER */
+.pn-banner{
+  background:linear-gradient(135deg,#1a1612 0%,#2d2420 100%);
+  padding:40px 28px 36px; text-align:center;
+  position:relative; overflow:hidden;
+}
+.pn-banner::before{
+  content:'🔒';font-size:80px;opacity:.06;
+  position:absolute;right:-10px;top:-10px;
+  transform:rotate(12deg);pointer-events:none;
+}
+.pn-banner-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,107,91,.15);color:var(--coral);
+  border-radius:var(--pill);padding:5px 14px;
+  font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  margin-bottom:14px;
+}
+.pn-banner h1{font-size:1.8rem;font-weight:900;color:#fff;letter-spacing:-.04em;margin-bottom:8px}
+.pn-banner p{font-size:.86rem;color:rgba(255,255,255,.5);font-weight:500;max-width:440px;margin:0 auto}
+
+/* BODY */
+.pn-body{max-width:900px;margin:0 auto;padding:36px 28px 40px}
+
+/* EDITOR CARD */
+.pn-editor-card{
+  background:var(--white);border-radius:var(--r-xl);
+  padding:28px 32px;box-shadow:var(--sh-md);margin-bottom:28px;
+}
+.pn-note-title{
+  font-size:1.6rem;font-weight:900;color:var(--ink);
+  border:none;outline:none;width:100%;background:transparent;
+  line-height:1.2;margin-bottom:12px;caret-color:var(--coral);
+  font-family:var(--font);letter-spacing:-.03em;
+}
+.pn-note-title::placeholder{color:var(--bg2)}
+
+.pn-divider{display:flex;align-items:center;gap:10px;margin-bottom:22px}
+.pn-div-line{flex:1;height:1px;background:var(--bg2)}
+.pn-div-mark{font-size:.75rem;color:var(--coral);opacity:.5}
+
+.pn-content{
+  min-height:200px;outline:none;font-size:.93rem;line-height:1.82;
+  color:var(--ink2);caret-color:var(--coral);font-family:var(--font);font-weight:500;
+}
+.pn-content:empty::before{content:'This note is just for you…';color:var(--bg2);pointer-events:none}
+.pn-content h2{font-size:1.2rem;color:var(--coral);margin:24px 0 8px;font-weight:800}
+.pn-content p{margin-bottom:13px}
+.pn-content code{font-family:var(--mono);background:var(--bg2);padding:2px 7px;border-radius:6px;font-size:.84em;color:var(--coral-dk)}
+
+/* Mini toolbar */
+.pn-toolbar{display:flex;align-items:center;gap:4px;padding:8px 0 16px;border-bottom:1px solid var(--bg2);margin-bottom:20px;flex-wrap:wrap}
+.pn-tb-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;border-radius:10px;cursor:pointer;color:var(--ink3);font-family:var(--font);font-size:.82rem;font-weight:700;transition:background var(--dur),color var(--dur)}
+.pn-tb-btn:hover{background:var(--bg2);color:var(--ink)}
+.pn-tb-btn.on{background:var(--coral-lt);color:var(--coral)}
+
+/* Save button */
+.pn-save{
+  display:inline-flex;align-items:center;gap:7px;padding:10px 22px;
+  background:var(--coral);color:#fff;border:none;border-radius:var(--pill);
+  cursor:pointer;font-family:var(--font);font-size:.82rem;font-weight:700;
+  box-shadow:0 4px 14px rgba(255,107,91,.26);
+  transition:background var(--dur),transform .14s;
+}
+.pn-save:hover{background:var(--coral-dk);transform:translateY(-1px)}
+
+/* SAVED NOTES LIST */
+.pn-notes-head{font-size:1.05rem;font-weight:900;color:var(--ink);margin-bottom:16px;letter-spacing:-.02em}
+.pn-notes-list{display:flex;flex-direction:column;gap:10px}
+
+.pn-note-item{
+  display:flex;align-items:flex-start;gap:14px;
+  background:var(--white);border-radius:var(--r-lg);
+  padding:16px 20px;box-shadow:var(--sh-sm);
+  cursor:pointer;transition:box-shadow var(--dur),transform .14s;
+}
+.pn-note-item:hover{box-shadow:var(--sh-md);transform:translateY(-1px)}
+
+.pn-note-icon{
+  width:38px;height:38px;border-radius:12px;
+  background:var(--coral-lt);color:var(--coral);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.pn-note-body{flex:1;min-width:0}
+.pn-note-item-title{font-size:.88rem;font-weight:800;color:var(--ink);margin-bottom:3px}
+.pn-note-item-excerpt{font-size:.76rem;color:var(--ink3);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pn-note-meta{font-size:.68rem;color:var(--ink3);font-weight:600;margin-top:5px}
+.pn-note-del{
+  width:28px;height:28px;border-radius:50%;
+  background:transparent;border:none;color:var(--ink3);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:background var(--dur),color var(--dur);
+}
+.pn-note-del:hover{background:#ffeaea;color:#e05a47}
+
+/* Empty state */
+.pn-empty{text-align:center;padding:48px 24px;color:var(--ink3)}
+.pn-empty-icon{font-size:3rem;margin-bottom:14px;opacity:.4}
+.pn-empty p{font-size:.88rem;font-weight:500}
+
+/* Floating nav */
+.float-nav{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;background:var(--ink);border-radius:var(--pill);padding:8px 10px;z-index:9999;box-shadow:0 8px 36px rgba(0,0,0,.30);transition:opacity var(--dur),transform var(--dur);white-space:nowrap;max-width:95vw;overflow-x:auto}
+.float-nav.hidden{opacity:0;pointer-events:none;transform:translateX(-50%) translateY(12px)}
+.float-nav-item{display:flex;align-items:center;gap:6px;font-family:var(--font);font-size:.72rem;font-weight:700;color:rgba(255,255,255,.6);background:transparent;border:none;border-radius:var(--pill);padding:6px 13px;cursor:pointer;transition:all .18s;white-space:nowrap;text-decoration:none}
+.float-nav-item:hover,.float-nav-item.active{background:var(--coral);color:#fff}
+.float-nav-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.float-nav-sep{width:1px;height:18px;background:rgba(255,255,255,.14);flex-shrink:0}
+.float-nav-private{display:flex;align-items:center;gap:6px;font-family:var(--font);font-size:.72rem;font-weight:700;color:#fff;background:rgba(255,107,91,.3);border:none;border-radius:var(--pill);padding:6px 13px;cursor:pointer;transition:all .18s;white-space:nowrap;text-decoration:none}
+.float-nav-private:hover{background:var(--coral)}
+.float-nav-dots{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.5);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.1rem;transition:background .18s,color .18s;flex-shrink:0}
+.float-nav-dots:hover{background:rgba(255,255,255,.2);color:#fff}
+.float-nav-show{position:fixed;bottom:22px;right:22px;width:42px;height:42px;border-radius:50%;background:var(--ink);color:rgba(255,255,255,.7);border:none;cursor:pointer;display:none;align-items:center;justify-content:center;font-size:.85rem;box-shadow:0 4px 18px rgba(0,0,0,.28);transition:background .18s,color .18s;z-index:9999}
+.float-nav-show:hover{background:var(--coral);color:#fff}
+.float-nav-show.visible{display:flex}
+
+@media(max-width:640px){
+  .pn-nav{padding:0 14px}
+  .pn-body{padding:24px 14px 40px}
+  .pn-editor-card{padding:20px 18px}
+  .pn-note-title{font-size:1.3rem}
+  .pn-banner{padding:28px 16px 24px}
+  .pn-banner h1{font-size:1.4rem}
+}
+</style>
+{% endblock %}
+
+{% block subpage_content %}
+<div class="pn-root" id="pnRoot">
+
+  <nav class="pn-nav">
+    <div class="pn-nav-l">
+      <a href="/home" class="cs-logo">
+        <img class="cs-logo-img" src="{{ url_for('static', path='img/logo.png') }}" alt="CoScribe logo"/>
+      </a>
+    </div>
+    <div class="pn-nav-r">
+      <button class="cs-icon-btn" id="themeBtn" title="Night mode">
+        <svg class="cs-icon-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg class="cs-icon-sun"  width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <a href="/home" class="cs-icon-btn" title="Back to dashboard">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </a>
+      <div class="cs-av" style="background:var(--coral)" title="{{ user.username }}">{{ user.username[:1].upper() }}</div>
+    </div>
+  </nav>
+
+  <!-- BANNER -->
+  <div class="pn-banner">
+    <div class="pn-banner-badge">🔒 Private</div>
+    <h1>Your Private Notes</h1>
+    <p>Only you can see these. Not shared, not collaborative — just yours.</p>
+  </div>
+
+  <div class="pn-body">
+
+    <!-- NEW NOTE EDITOR -->
+    <div class="pn-editor-card">
+      <!-- Mini toolbar -->
+      <div class="pn-toolbar">
+        <button class="pn-tb-btn" id="pb-bold" title="Bold" onclick="pnCmd('bold')"><b>B</b></button>
+        <button class="pn-tb-btn" id="pb-italic" title="Italic" onclick="pnCmd('italic')"><i>I</i></button>
+        <button class="pn-tb-btn" id="pb-underline" title="Underline" onclick="pnCmd('underline')"><u>U</u></button>
+        <button class="pn-tb-btn" title="Bullets" onclick="pnCmd('insertUnorderedList')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor"/><circle cx="4" cy="12" r="1.5" fill="currentColor"/><circle cx="4" cy="18" r="1.5" fill="currentColor"/></svg></button>
+        <button class="pn-tb-btn" title="Heading" onclick="pnCmd('formatBlock','h2')" style="font-size:.72rem;font-weight:800">H</button>
+        <button class="pn-tb-btn" title="Code" onclick="pnCmd('formatBlock','pre')" style="font-size:.72rem;font-family:monospace">&lt;/&gt;</button>
+      </div>
+
+      <input class="pn-note-title" id="pnTitle" type="text" placeholder="Note title…"/>
+      <div class="pn-divider"><div class="pn-div-line"></div><div class="pn-div-mark">✦</div><div class="pn-div-line"></div></div>
+      <div class="pn-content" id="pnContent" contenteditable="true" spellcheck="true"></div>
+
+      <div style="display:flex;justify-content:flex-end;margin-top:20px;gap:10px;align-items:center">
+        <span id="pnStatus" style="font-size:.74rem;color:var(--ink3);font-weight:500"></span>
+        <button class="pn-save" id="pnSaveBtn" onclick="saveNote()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save note
+        </button>
+      </div>
+    </div>
+
+    <!-- SAVED NOTES -->
+    <div class="pn-notes-head">Saved Notes</div>
+    <div class="pn-notes-list" id="pnNotesList">
+      <!-- Empty state shown by default, JS fills with localStorage notes -->
+      <div class="pn-empty" id="pnEmpty">
+        <div class="pn-empty-icon">📝</div>
+        <p>No private notes yet.<br/>Write something above to get started.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FLOATING NAV -->
+<div class="float-nav" id="floatNav">
+  <a href="/notes?course=INFO2602" class="float-nav-item"><div class="float-nav-dot" style="background:#c0392b"></div>INFO 2602</a>
+  <a href="/notes?course=COMP2605" class="float-nav-item"><div class="float-nav-dot" style="background:#5b7fa6"></div>COMP 2605</a>
+  <a href="/notes?course=MATH2110" class="float-nav-item"><div class="float-nav-dot" style="background:#8e44ad"></div>MATH 2110</a>
+  <a href="/notes?course=INFO2600" class="float-nav-item"><div class="float-nav-dot" style="background:#27ae60"></div>INFO 2600</a>
+  <div class="float-nav-sep"></div>
+  <a href="/private-notes" class="float-nav-private">🔒 Private</a>
+  <div class="float-nav-sep"></div>
+  <button class="float-nav-dots" id="hideNavBtn">⋯</button>
+</div>
+<button class="float-nav-show" id="showNavBtn">⋯</button>
+
+<script>
+/* ── Theme ── */
+const root = document.getElementById('pnRoot');
+if(localStorage.getItem('cs-theme')==='dark') root.setAttribute('data-theme','dark');
+document.getElementById('themeBtn').addEventListener('click',()=>{
+  const d=root.getAttribute('data-theme')==='dark';
+  d?root.removeAttribute('data-theme'):root.setAttribute('data-theme','dark');
+  localStorage.setItem('cs-theme',d?'light':'dark');
+});
+
+/* ── Float nav ── */
+const floatNav=document.getElementById('floatNav');
+const showNavBtn=document.getElementById('showNavBtn');
+if(localStorage.getItem('cs-nav-hidden')==='1'){floatNav.classList.add('hidden');showNavBtn.classList.add('visible');}
+document.getElementById('hideNavBtn').addEventListener('click',()=>{floatNav.classList.add('hidden');showNavBtn.classList.add('visible');localStorage.setItem('cs-nav-hidden','1');});
+showNavBtn.addEventListener('click',()=>{floatNav.classList.remove('hidden');showNavBtn.classList.remove('visible');localStorage.setItem('cs-nav-hidden','0');});
+
+/* ── Private Notes (localStorage) ── */
+const STORAGE_KEY = 'cs-private-notes';
+
+function getNotes(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); }catch{ return []; } }
+function saveNotes(notes){ localStorage.setItem(STORAGE_KEY, JSON.stringify(notes)); }
+
+function renderNotes(){
+  const notes = getNotes();
+  const list = document.getElementById('pnNotesList');
+  const empty = document.getElementById('pnEmpty');
+
+  // Clear except empty state
+  Array.from(list.children).forEach(c=>{ if(c.id!=='pnEmpty') c.remove(); });
+
+  if(notes.length===0){
+    empty.style.display='';
+    return;
+  }
+  empty.style.display='none';
+
+  notes.slice().reverse().forEach((note,rIdx)=>{
+    const idx = notes.length - 1 - rIdx;
+    const item = document.createElement('div');
+    item.className='pn-note-item';
+    item.innerHTML=`
+      <div class="pn-note-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <div class="pn-note-body">
+        <div class="pn-note-item-title">${escHtml(note.title||'Untitled')}</div>
+        <div class="pn-note-item-excerpt">${escHtml(stripHtml(note.content)||'No content')}</div>
+        <div class="pn-note-meta">${new Date(note.created).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
+      </div>
+      <button class="pn-note-del" title="Delete note" onclick="deleteNote(${idx},event)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      </button>
+    `;
+    // Click to load note
+    item.querySelector('.pn-note-body').addEventListener('click',()=>loadNote(note));
+    list.appendChild(item);
+  });
+}
+
+function escHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function stripHtml(h){ const d=document.createElement('div'); d.innerHTML=h; return d.textContent||d.innerText||''; }
+
+function saveNote(){
+  const title=document.getElementById('pnTitle').value.trim();
+  const content=document.getElementById('pnContent').innerHTML.trim();
+  if(!title && !content){ document.getElementById('pnStatus').textContent='Nothing to save.'; return; }
+
+  const notes=getNotes();
+  notes.push({ title, content, created:Date.now() });
+  saveNotes(notes);
+  document.getElementById('pnTitle').value='';
+  document.getElementById('pnContent').innerHTML='';
+  document.getElementById('pnStatus').textContent='Saved!';
+  setTimeout(()=>document.getElementById('pnStatus').textContent='',2000);
+  renderNotes();
+}
+
+function loadNote(note){
+  document.getElementById('pnTitle').value=note.title||'';
+  document.getElementById('pnContent').innerHTML=note.content||'';
+  document.getElementById('pnTitle').focus();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function deleteNote(idx,e){
+  e.stopPropagation();
+  if(!confirm('Delete this private note?')) return;
+  const notes=getNotes();
+  notes.splice(idx,1);
+  saveNotes(notes);
+  renderNotes();
+}
+
+/* ── Mini toolbar ── */
+const pnEd = document.getElementById('pnContent');
+function pnCmd(c,v=null){ pnEd.focus(); document.execCommand(c,false,v); syncPnTb(); }
+const pnTbMap={'pb-bold':'bold','pb-italic':'italic','pb-underline':'underline'};
+function syncPnTb(){ for(const[id,c] of Object.entries(pnTbMap)){ const el=document.getElementById(id); if(el) el.classList.toggle('on',document.queryCommandState(c)); } }
+document.addEventListener('selectionchange',syncPnTb);
+
+// Ctrl+S to save
+document.addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&e.key==='s'){ e.preventDefault(); saveNote(); } });
+
+renderNotes();
+</script>
+{% endblock %}
+{% block subpage_scripts %}{% endblock %}
