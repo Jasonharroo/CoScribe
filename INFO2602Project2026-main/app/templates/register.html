@@ -3,109 +3,108 @@
 
 {% block internal_css %}
 <style>
-* { box-sizing: border-box; }
-body { background: var(--cs-bg); min-height: 100vh; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { min-height: 100vh; font-family: 'Montserrat', sans-serif; }
 
-.auth-wrap {
-  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+.auth-bg {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
   padding: 24px 16px;
+  background-image: url("{{ url_for('static', path='img/loginbg') }}");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+}
+.auth-bg::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(15,10,6,0.52);
+  backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
 }
 
 .auth-card {
-  width: 100%; max-width: 440px;
-  background: var(--cs-white); border: 1.5px solid var(--cs-border);
-  border-radius: 16px; padding: 40px 40px 36px;
-  box-shadow: 0 8px 40px rgba(0,0,0,.07);
-  animation: fadeUp .3s var(--cs-ease);
+  position: relative; z-index: 1;
+  width: 100%; max-width: 420px;
+  background: rgba(255,255,255,0.97);
+  border-radius: 28px; padding: 40px 40px 36px;
+  box-shadow: 0 20px 80px rgba(0,0,0,.35);
+  animation: fadeUp .32s cubic-bezier(0.4,0,0.2,1);
 }
-@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:none} }
 
 .auth-logo { display: flex; justify-content: center; margin-bottom: 28px; }
+.auth-logo-co     { font-size: 1.3rem; font-weight: 600; color: #9c9088; }
+.auth-logo-scribe { font-size: 1.3rem; font-weight: 900; color: #FF6B5B; letter-spacing: -.02em; }
 
-.auth-title { font-family: var(--cs-font-d); font-size: 1.75rem; font-weight: 800; color: var(--cs-ink); text-align: center; margin-bottom: 6px; }
-.auth-sub { font-size: .85rem; color: var(--cs-ink-3); text-align: center; margin-bottom: 28px; }
-.auth-sub a { color: var(--cs-red); text-decoration: none; font-weight: 500; }
-.auth-sub a:hover { text-decoration: underline; }
-
-.auth-form { display: flex; flex-direction: column; gap: 18px; }
+.auth-title { font-size: 1.65rem; font-weight: 900; color: #17110d; text-align: center; margin-bottom: 6px; letter-spacing: -.03em; }
+.auth-sub { font-size: .84rem; color: #9c9088; text-align: center; margin-bottom: 28px; font-weight: 500; }
+.auth-sub a { color: #FF6B5B; text-decoration: none; font-weight: 700; }
+.auth-form { display: flex; flex-direction: column; gap: 14px; }
 .auth-field { display: flex; flex-direction: column; gap: 6px; }
-.auth-hint { font-size: .73rem; color: var(--cs-ink-3); margin-top: 3px; }
-
-.auth-submit {
-  width: 100%; padding: 12px; margin-top: 4px;
-  background: var(--cs-red); color: #fff; border: none; border-radius: 8px;
-  font-family: var(--cs-font-b); font-size: .9rem; font-weight: 600; cursor: pointer;
-  box-shadow: 0 2px 10px rgba(224,90,71,.28);
-  transition: background var(--cs-dur) var(--cs-ease), transform .14s;
+.auth-label { font-size: .72rem; font-weight: 700; color: #9c9088; letter-spacing: .06em; text-transform: uppercase; }
+.auth-hint { font-size: .72rem; color: #c4b8ac; font-weight: 500; }
+.auth-input {
+  width: 100%; padding: 13px 16px;
+  background: #f6f4f0; border: none; border-radius: 14px;
+  font-size: .9rem; color: #17110d; outline: none;
+  font-family: 'Montserrat', sans-serif; font-weight: 500;
+  transition: background .2s, box-shadow .2s;
 }
-.auth-submit:hover { background: var(--cs-red-dk); transform: translateY(-1px); }
-
-.auth-back { text-align: center; margin-top: 18px; font-size: .8rem; color: var(--cs-ink-3); }
-.auth-back a { color: var(--cs-red); text-decoration: none; font-weight: 500; }
-
-.cs-alert { padding: 10px 14px; border-radius: 8px; font-size: .82rem; border: 1.5px solid; margin-bottom: 4px; }
-.cs-alert-danger  { background: var(--cs-red-faint); border-color: var(--cs-red-rim); color: var(--cs-red-dk); }
-.cs-alert-success { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
-
-.auth-terms { font-size: .73rem; color: var(--cs-ink-3); text-align: center; margin-top: 8px; }
-.auth-terms a { color: var(--cs-red); text-decoration: none; }
+.auth-input:focus { background: #fff; box-shadow: 0 0 0 2px #FF6B5B, 0 0 0 5px rgba(255,107,91,.1); }
+.auth-input::placeholder { color: #c4b8ac; }
+.auth-submit {
+  width: 100%; padding: 14px; margin-top: 6px;
+  background: #FF6B5B; color: #fff; border: none; border-radius: 999px;
+  font-family: 'Montserrat', sans-serif; font-size: .9rem; font-weight: 800;
+  cursor: pointer; letter-spacing: .02em;
+  box-shadow: 0 4px 18px rgba(255,107,91,.35);
+  transition: background .2s, transform .14s;
+}
+.auth-submit:hover { background: #e5503f; transform: translateY(-1px); }
+.auth-terms { font-size: .72rem; color: #c4b8ac; text-align: center; font-weight: 500; }
+.auth-back { text-align: center; margin-top: 20px; font-size: .78rem; color: #9c9088; font-weight: 500; }
+.auth-back a { color: #FF6B5B; text-decoration: none; font-weight: 700; }
+.cs-alert { padding: 11px 15px; border-radius: 12px; font-size: .82rem; font-weight: 600; margin-bottom: 6px; }
+.cs-alert-danger  { background: #fff0ee; color: #c94433; }
+.cs-alert-success { background: #f0fdf4; color: #166534; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="auth-wrap">
+<div class="auth-bg">
   <div class="auth-card">
-
     <div class="auth-logo">
-      <a href="/" class="cs-logo">
-        <img class="cs-logo-img" src="{{ url_for('static', path='img/logo.png') }}" alt="CoScribe"
-             onerror="this.style.display='none';this.nextElementSibling.classList.add('visible')"/>
-        <span class="cs-logo-text">
-          <span class="cs-logo-co">Co</span><span class="cs-logo-scribe">Scribe.</span>
-        </span>
+      <a href="/" style="text-decoration:none;display:flex;align-items:center;">
+        <img src="{{ url_for('static', path='img/logo.png') }}" alt="CoScribe logo" style="height:30px;width:auto;"/>
       </a>
     </div>
-
-    <h1 class="auth-title">Create your account</h1>
-    <p class="auth-sub">Already have one? <a href="/login">Sign in</a></p>
+    <h1 class="auth-title">Create account</h1>
+    <p class="auth-sub">Already have one? <a href="/login">Sign in →</a></p>
 
     {% for message in get_flashed_messages(request) %}
       <div class="cs-alert cs-alert-{{ message.type }}">{{ message.message }}</div>
     {% endfor %}
 
-    <form class="auth-form" id="registerForm" method="POST" action="/register">
-
+    <form class="auth-form" method="POST" action="/register">
       <div class="auth-field">
-        <label class="cs-label" for="username">Username</label>
-        <input class="cs-input" type="text" id="username" name="username"
-               placeholder="Choose a username" required autocomplete="username"/>
+        <label class="auth-label">Username</label>
+        <input class="auth-input" type="text" name="username" placeholder="Choose a username" required autocomplete="username"/>
         <span class="auth-hint">Letters, numbers and underscores only.</span>
       </div>
-
       <div class="auth-field">
-        <label class="cs-label" for="email">Email</label>
-        <input class="cs-input" type="email" id="email" name="email"
-               placeholder="your@email.com" required autocomplete="email"/>
+        <label class="auth-label">Email</label>
+        <input class="auth-input" type="email" name="email" placeholder="your@email.com" required autocomplete="email"/>
       </div>
-
       <div class="auth-field">
-        <label class="cs-label" for="password">Password</label>
-        <input class="cs-input" type="password" id="password" name="password"
-               placeholder="Create a strong password" required autocomplete="new-password"/>
+        <label class="auth-label">Password</label>
+        <input class="auth-input" type="password" name="password" placeholder="Create a strong password" required autocomplete="new-password"/>
         <span class="auth-hint">At least 8 characters.</span>
       </div>
-
       <button type="submit" class="auth-submit">Create account</button>
-
-      <p class="auth-terms">
-        By signing up you agree to our terms of service.
-      </p>
+      <p class="auth-terms">By signing up you agree to our terms of service.</p>
     </form>
-
-    <div class="auth-back">
-      <a href="/">← Back to home</a>
-    </div>
-
+    <div class="auth-back"><a href="/">← Back to home</a></div>
   </div>
 </div>
 {% endblock %}

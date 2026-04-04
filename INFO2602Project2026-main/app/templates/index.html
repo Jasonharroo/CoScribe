@@ -167,11 +167,7 @@ body { background: var(--cs-bg); overflow-x: hidden; }
 <!-- NAV -->
 <nav class="land-nav">
   <a href="/" class="cs-logo">
-    <img class="cs-logo-img" src="{{ url_for('static', path='img/logo.png') }}" alt="CoScribe"
-         onerror="this.style.display='none';this.nextElementSibling.classList.add('visible')"/>
-    <span class="cs-logo-text">
-      <span class="cs-logo-co">Co</span><span class="cs-logo-scribe">Scribe.</span>
-    </span>
+    <img class="cs-logo-img" src="{{ url_for('static', path='img/logo.png') }}" alt="CoScribe logo"/>
   </a>
   <div class="land-nav-links">
     <a href="/login">Sign in</a>
