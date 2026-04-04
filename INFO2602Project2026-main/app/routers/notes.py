@@ -1,20 +1,86 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlmodel import Session
 from app.database import get_session
 from app.repositories.note import NoteRepository
+from app.repositories.course import CourseRepository
 from app.services.note_service import NoteService
+from app.services.course_service import CourseService
 from app.schemas.note import NoteCreate, NoteUpdate
 from app.dependencies.auth import AuthDep
+from typing import List
+from . import templates
 
 router = APIRouter(prefix="/notes", tags=["Notes"])
-
+api_router = APIRouter(prefix="/notes", tags=["Notes API"])
 
 def get_note_service(db: Session = Depends(get_session)):
     repo = NoteRepository(db)
     return NoteService(repo)
 
+@router.get("/new", response_class=HTMLResponse)
+def new_note_view(
+    request: Request,
+    user: AuthDep,
+    db: Session = Depends(get_session),
+    course_id: int | None = None,
+):
+    course_repo = CourseRepository(db)
+    course_service = CourseService(course_repo)
+    courses = course_service.get_all_courses()
 
-@router.post("/")
+    selected_course_id = course_id or (courses[0].id if courses else 1)
+    
+    return templates.TemplateResponse(
+        request=request,
+        name="notes.html",
+        context={
+            "user": user,
+            "note": None,
+            "is_new": True,
+            "courses": courses,
+            "selected_course_id": selected_course_id,
+            "course_notes": [],
+        }
+    )
+
+
+@router.get("/{note_id}", response_class=HTMLResponse)
+def note_view(
+    note_id: int,
+    request: Request,
+    user: AuthDep,
+    service: NoteService = Depends(get_note_service),
+    db: Session = Depends(get_session),
+):
+    note = service.get_note(note_id)
+
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+
+    if note.owner_id != user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    course_repo = CourseRepository(db)
+    course_service = CourseService(course_repo)
+    courses = course_service.get_all_courses()
+    course_notes = service.get_notes_by_owner_and_course(user.id, note.course_id)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="notes.html",
+        context={
+            "user": user,
+            "note": note,
+            "is_new": False,
+            "courses": courses,
+            "selected_course_id": note.course_id,
+            "course_notes": course_notes,
+        }
+    )
+
+
+@api_router.post("/")
 def create_note(
     note: NoteCreate,
     user: AuthDep,
@@ -23,16 +89,16 @@ def create_note(
     return service.create_note(note, user.id)
 
 
-@router.get("/")
+@api_router.get("/")
 def get_notes(
     user: AuthDep,
     service: NoteService = Depends(get_note_service)
 ):
-    return service.get_all_notes()
+    return service.get_notes_by_owner(user.id)
 
 
-@router.get("/{note_id}")
-def get_note(
+@api_router.get("/{note_id}")
+def get_note_api(
     note_id: int,
     user: AuthDep,
     service: NoteService = Depends(get_note_service)
@@ -40,10 +106,12 @@ def get_note(
     note = service.get_note(note_id)
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
+    if note.owner_id != user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
     return note
 
 
-@router.put("/{note_id}")
+@api_router.put("/{note_id}")
 def update_note(
     note_id: int,
     note: NoteUpdate,
@@ -61,7 +129,7 @@ def update_note(
     return service.update_note(note_id, note)
 
 
-@router.delete("/{note_id}")
+@api_router.delete("/{note_id}")
 def delete_note(
     note_id: int,
     user: AuthDep,

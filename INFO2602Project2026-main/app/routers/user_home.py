@@ -1,8 +1,13 @@
-from fastapi import APIRouter, HTTPException, Depends, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi import status
+from fastapi import Request
+from fastapi.responses import HTMLResponse
 from app.dependencies.session import SessionDep
-from app.dependencies.auth import AuthDep, IsUserLoggedIn, get_current_user, is_admin
+from app.dependencies.auth import AuthDep
+from app.repositories.note import NoteRepository
+from app.services.note_service import NoteService
+from app.repositories.user_course import UserCourseRepository
+from app.services.user_course_service import UserCourseService
+from app.models.course import Course
+from sqlmodel import select
 from . import router, templates
 
 
@@ -10,12 +15,33 @@ from . import router, templates
 async def user_home_view(
     request: Request,
     user: AuthDep,
-    db:SessionDep
+    db: SessionDep
 ):
+    note_repo = NoteRepository(db)
+    note_service = NoteService(note_repo)
+    notes = note_service.get_notes_by_owner(user.id)
+
+    uc_repo = UserCourseRepository(db)
+    uc_service = UserCourseService(uc_repo)
+
+    user_courses_links = uc_service.get_user_courses(user.id)
+    course_ids = [uc.course_id for uc in user_courses_links]
+
+    if course_ids:
+        courses = db.exec(
+            select(Course).where(Course.id.in_(course_ids))
+        ).all()
+    else:
+        courses = []
+
     return templates.TemplateResponse(
-        request=request, 
+        request=request,
         name="home.html",
         context={
-            "user": user
+            "user": user,
+            "notes": notes,
+            "note_count": len(notes),
+            "courses": courses,
+            "course_count": len(courses),
         }
     )

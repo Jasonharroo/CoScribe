@@ -61,3 +61,15 @@ class NoteRepository:
             logger.error(f"Error deleting note: {e}")
             self.db.rollback()
             raise
+    
+    def get_by_owner(self, owner_id: int) -> List[Note]:
+        return self.db.exec(
+            select(Note).where(Note.owner_id == owner_id).order_by(Note.id.desc())
+        ).all()
+    
+    def get_by_owner_and_course(self, owner_id: int, course_id: int) -> List[Note]:
+        return self.db.exec(
+            select(Note)
+            .where(Note.owner_id == owner_id, Note.course_id == course_id)
+            .order_by(Note.id.desc())
+        ).all()

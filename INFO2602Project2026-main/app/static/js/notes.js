@@ -4,7 +4,7 @@
 ═══════════════════════════════════════════════════════ */
 
 const APP  = document.getElementById('csApp');
-const ED   = document.getElementById('content');
+const ED   = document.getElementById('noteEditor');
 
 /* ── THEME ─────────────────────────── */
 (function initTheme() {
@@ -159,6 +159,39 @@ document.getElementById('btn-center')   .addEventListener('click', () => execCmd
 document.getElementById('btn-right')    .addEventListener('click', () => execCmd('justifyRight'));
 document.getElementById('btn-undo')     .addEventListener('click', () => execCmd('undo'));
 document.getElementById('btn-redo')     .addEventListener('click', () => execCmd('redo'));
+const deleteBtn = document.getElementById('deleteNoteBtn');
+
+async function deleteNote() {
+  const isNew = window.COSCRIBE_NOTE?.isNew;
+  const noteId = window.COSCRIBE_NOTE?.noteId;
+
+  if (isNew || !noteId) {
+    alert('This note has not been created yet.');
+    return;
+  }
+
+  const confirmed = window.confirm('Are you sure you want to delete this note?');
+  if (!confirmed) return;
+
+  try {
+    const res = await fetch(`/api/notes/${noteId}`, {
+      method: 'DELETE'
+    });
+
+    if (!res.ok) {
+      throw new Error('Failed to delete note');
+    }
+
+    window.location.href = '/app';
+  } catch (err) {
+    console.error(err);
+    alert('Could not delete note.');
+  }
+}
+
+if (deleteBtn) {
+  deleteBtn.addEventListener('click', deleteNote);
+}
 
 /* ── KEYBOARD SHORTCUTS ──────────── */
 ED.addEventListener('keydown', e => {
@@ -344,3 +377,72 @@ document.getElementById('courseSearch').addEventListener('input', function() {
     i.style.display = i.textContent.toLowerCase().includes(q) ? '' : 'none';
   });
 });
+
+/* ── SAVE NOTE ───────────────────── */
+const saveBtn = document.getElementById('saveNoteBtn');
+
+async function saveNote() {
+  const title = titleInput.value.trim();
+  const content = ED.innerHTML.trim();
+  const lbl = document.getElementById('savedLbl');
+
+  if (!title) {
+    alert('Please enter a note title.');
+    return;
+  }
+
+  const plainText = ED.innerText.trim();
+  if (!plainText) {
+    alert('Note content cannot be empty.');
+    return;
+  }
+
+  lbl.textContent = 'Saving…';
+
+  const payload = {
+    title: title,
+    content: content,
+    course_id: window.COSCRIBE_NOTE?.courseId || 1
+  };
+
+  const isNew = window.COSCRIBE_NOTE?.isNew;
+  const noteId = window.COSCRIBE_NOTE?.noteId;
+
+  const url = isNew
+    ? '/api/notes/'
+    : `/api/notes/${noteId}`;
+
+  const method = isNew ? 'POST' : 'PUT';
+
+  try {
+    const res = await fetch(url, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      throw new Error('Failed to save note');
+    }
+
+    const saved = await res.json();
+
+    lbl.textContent = 'Saved just now';
+
+    // Redirect ONLY if new note
+    if (isNew) {
+      window.location.href = `/notes/${saved.id}`;
+    }
+
+  } catch (err) {
+    console.error(err);
+    lbl.textContent = 'Save failed';
+    alert('Could not save note.');
+  }
+}
+
+if (saveBtn) {
+  saveBtn.addEventListener('click', saveNote);
+}

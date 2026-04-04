@@ -1,4 +1,5 @@
 import uvicorn
+import app.models
 from fastapi import FastAPI, Request, status
 from starlette.middleware import Middleware
 from starlette.middleware.sessions import SessionMiddleware

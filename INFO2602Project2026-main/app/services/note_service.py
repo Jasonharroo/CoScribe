@@ -20,3 +20,11 @@ class NoteService:
 
     def delete_note(self, note_id: int):
         self.note_repo.delete(note_id)
+
+    def get_notes_by_owner(self, owner_id: int):
+        return self.note_repo.get_by_owner(owner_id)
+    
+    def get_notes_by_owner_and_course(self, owner_id: int, course_id: int):
+        return self.note_repo.get_by_owner_and_course(owner_id, course_id)
+    
+    
