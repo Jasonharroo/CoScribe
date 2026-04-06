@@ -1,11 +1,12 @@
 {% extends "base.html" %} {% block title %}CoScribe — Home{% endblock %} {%
 block external_css %}
-<link href="{{ url_for('static', path='css/home.css')}}" rel="stylesheet" />
+<!-- <link href="{{ url_for('static', path='css/home.css')}}" rel="stylesheet" /> -->
 {% endblock %} {% block internal_css %}
 <style>
   * {
     box-sizing: border-box;
   }
+
   body {
     overflow-x: hidden;
   }
@@ -27,11 +28,13 @@ block external_css %}
     -webkit-backdrop-filter: blur(18px);
     transition: background var(--cs-dur) var(--cs-ease);
   }
+
   .home-nav-l {
     display: flex;
     align-items: center;
     gap: 10px;
   }
+
   .home-nav-r {
     display: flex;
     align-items: center;
@@ -49,6 +52,7 @@ block external_css %}
   .home-greeting {
     margin-bottom: 36px;
   }
+
   .home-greeting-kicker {
     font-size: 0.72rem;
     font-weight: 600;
@@ -57,6 +61,7 @@ block external_css %}
     color: var(--cs-ink-3);
     margin-bottom: 8px;
   }
+
   .home-greeting h1 {
     font-family: var(--cs-font-d);
     font-size: 2rem;
@@ -65,10 +70,12 @@ block external_css %}
     line-height: 1.15;
     margin-bottom: 6px;
   }
+
   .home-greeting h1 em {
     color: var(--cs-red);
     font-style: italic;
   }
+
   .home-greeting p {
     font-size: 0.88rem;
     color: var(--cs-ink-3);
@@ -81,6 +88,7 @@ block external_css %}
     gap: 14px;
     margin-bottom: 40px;
   }
+
   .home-stat {
     background: var(--cs-white);
     border: 1.5px solid var(--cs-border);
@@ -90,10 +98,12 @@ block external_css %}
       border-color var(--cs-dur) var(--cs-ease),
       box-shadow var(--cs-dur) var(--cs-ease);
   }
+
   .home-stat:hover {
     border-color: var(--cs-red-rim);
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.07);
   }
+
   .home-stat-val {
     font-family: var(--cs-font-d);
     font-size: 1.8rem;
@@ -101,6 +111,7 @@ block external_css %}
     color: var(--cs-ink);
     line-height: 1;
   }
+
   .home-stat-lbl {
     font-size: 0.73rem;
     color: var(--cs-ink-3);
@@ -114,12 +125,14 @@ block external_css %}
     justify-content: space-between;
     margin-bottom: 16px;
   }
+
   .home-sec-title {
     font-family: var(--cs-font-d);
     font-size: 1.15rem;
     font-weight: 700;
     color: var(--cs-ink);
   }
+
   .home-sec-action {
     font-size: 0.78rem;
     color: var(--cs-red);
@@ -129,6 +142,7 @@ block external_css %}
     border-radius: 6px;
     transition: background var(--cs-dur) var(--cs-ease);
   }
+
   .home-sec-action:hover {
     background: var(--cs-red-faint);
   }
@@ -141,7 +155,6 @@ block external_css %}
     margin-bottom: 44px;
   }
 
-  /* new note tile */
   .home-note-new {
     background: transparent;
     border: 2px dashed var(--cs-border);
@@ -158,10 +171,12 @@ block external_css %}
       border-color var(--cs-dur) var(--cs-ease),
       background var(--cs-dur) var(--cs-ease);
   }
+
   .home-note-new:hover {
     border-color: var(--cs-red);
     background: var(--cs-red-faint);
   }
+
   .home-note-new-icon {
     width: 42px;
     height: 42px;
@@ -175,17 +190,18 @@ block external_css %}
       background var(--cs-dur) var(--cs-ease),
       color var(--cs-dur) var(--cs-ease);
   }
+
   .home-note-new:hover .home-note-new-icon {
     background: var(--cs-red);
     color: #fff;
   }
+
   .home-note-new span {
     font-size: 0.82rem;
     font-weight: 500;
     color: var(--cs-ink-3);
   }
 
-  /* note card */
   .home-note-card {
     background: var(--cs-white);
     border: 1.5px solid var(--cs-border);
@@ -201,6 +217,7 @@ block external_css %}
       box-shadow var(--cs-dur) var(--cs-ease),
       transform 0.14s;
   }
+
   .home-note-card::before {
     content: "";
     position: absolute;
@@ -211,11 +228,13 @@ block external_css %}
     background: transparent;
     transition: background var(--cs-dur) var(--cs-ease);
   }
+
   .home-note-card:hover {
     border-color: var(--cs-red-rim);
     box-shadow: 0 6px 22px rgba(0, 0, 0, 0.09);
     transform: translateY(-2px);
   }
+
   .home-note-card:hover::before {
     background: var(--cs-red);
   }
@@ -229,6 +248,7 @@ block external_css %}
     color: var(--cs-red);
     margin-bottom: 8px;
   }
+
   .hnc-title {
     font-family: var(--cs-font-d);
     font-size: 1rem;
@@ -237,6 +257,7 @@ block external_css %}
     margin-bottom: 6px;
     line-height: 1.3;
   }
+
   .hnc-excerpt {
     font-size: 0.78rem;
     color: var(--cs-ink-3);
@@ -246,6 +267,7 @@ block external_css %}
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
   .hnc-foot {
     display: flex;
     align-items: center;
@@ -256,10 +278,12 @@ block external_css %}
     font-size: 0.7rem;
     color: var(--cs-ink-3);
   }
+
   .hnc-avs {
     display: flex;
     align-items: center;
   }
+
   .hnc-audio {
     display: inline-flex;
     align-items: center;
@@ -280,6 +304,7 @@ block external_css %}
     gap: 10px;
     margin-bottom: 40px;
   }
+
   .home-course-chip {
     display: flex;
     align-items: center;
@@ -297,39 +322,41 @@ block external_css %}
       background var(--cs-dur) var(--cs-ease),
       color var(--cs-dur) var(--cs-ease);
   }
+
   .home-course-chip:hover {
     border-color: var(--cs-red);
     background: var(--cs-red-faint);
     color: var(--cs-red);
   }
+
   .home-course-chip-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
     flex-shrink: 0;
   }
+
   .home-course-chip-count {
     font-size: 0.7rem;
     font-family: var(--cs-font-m);
     color: var(--cs-ink-3);
   }
 
-  /* ── RESPONSIVE ── */
   @media (max-width: 640px) {
     .home-nav {
       padding: 0 14px;
     }
+
     .home-body {
       padding: 24px 14px 60px;
     }
+
     .home-greeting h1 {
       font-size: 1.6rem;
     }
   }
 </style>
 {% endblock %} {% block content %}
-
-<!-- NAV -->
 <nav class="home-nav">
   <div class="home-nav-l">
     <a href="/" class="cs-logo">
@@ -434,16 +461,13 @@ block external_css %}
   </div>
 </nav>
 
-<!-- PAGE BODY -->
 <div class="home-body">
-  <!-- Greeting -->
   <div class="home-greeting">
     <div class="home-greeting-kicker">Dashboard</div>
     <h1>Good day, <em>{{ user.username }}</em> 👋</h1>
     <p>Pick up where you left off or start something new.</p>
   </div>
 
-  <!-- Stats -->
   <div class="home-stats">
     <div class="home-stat">
       <div class="home-stat-val">{{ note_count }}</div>
@@ -463,14 +487,12 @@ block external_css %}
     </div>
   </div>
 
-  <!-- Recent notes -->
   <div class="home-sec">
     <div class="home-sec-title">Recent Notes</div>
     <a href="/notes" class="home-sec-action">View all →</a>
   </div>
 
   <div class="home-note-grid">
-    <!-- New note tile -->
     <a href="/notes/new" class="home-note-new">
       <div class="home-note-new-icon">
         <svg
@@ -514,7 +536,6 @@ block external_css %}
     {% endfor %}
   </div>
 
-  <!-- Courses -->
   <div class="home-sec">
     <div class="home-sec-title">My Courses</div>
     <a href="/courses" class="home-sec-action">Manage →</a>
@@ -548,5 +569,4 @@ block external_css %}
     localStorage.setItem("cs-theme", dark ? "light" : "dark");
   });
 </script>
-
 {% endblock %}

@@ -1,6 +1,9 @@
 {% extends "authenticated-base.html" %} {% block title %}CoScribe — Notes{%
 endblock %} {% block external_css %}
-<link href="{{ url_for('static', path='css/notes.css')}}" rel="stylesheet" />
+<link
+  href="{{ url_for('static', path='css/notes.css') }}?v=3889886"
+  rel="stylesheet"
+/>
 {% endblock %} {% block additional_styles %} #sidebar, .navbar { display: none
 !important; } #content { padding: 0 !important; background: var(--cs-bg)
 !important; overflow: hidden !important; } body { overflow: hidden; } {%
@@ -42,17 +45,20 @@ endblock %} {% block subpage_content %}
         >
       </a>
     </div>
+
     <div class="cs-nav-c">
       <span class="cs-nav-title" id="navTitle">
         {{ note.title if note else "Untitled Note" }}
       </span>
     </div>
+
     <div class="cs-nav-r">
       <div class="cs-nav-avatars">
         <div class="cs-av" style="background: #e05a47">M</div>
         <div class="cs-av" style="background: #5b7fa6">K</div>
         <div class="cs-live-dot"></div>
       </div>
+
       <button class="cs-icon-btn" id="themeBtn" title="Night mode">
         <svg
           class="cs-icon-moon"
@@ -85,6 +91,7 @@ endblock %} {% block subpage_content %}
           <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
         </svg>
       </button>
+
       <button class="cs-btn-primary" id="saveNoteBtn" type="button">
         Save
       </button>
@@ -108,6 +115,7 @@ endblock %} {% block subpage_content %}
         </svg>
         New Note
       </a>
+
       <div class="cs-user-chip" title="{{ user.username }}">
         {{ user.username[:1].upper() }}
       </div>
@@ -131,6 +139,7 @@ endblock %} {% block subpage_content %}
           </svg>
         </button>
       </div>
+
       <div class="cs-search">
         <svg
           width="13"
@@ -145,6 +154,7 @@ endblock %} {% block subpage_content %}
         </svg>
         <input id="courseSearch" type="text" placeholder="Search courses…" />
       </div>
+
       <div class="cs-course-list" id="courseList">
         <div class="cs-cl-label">My Courses</div>
 
@@ -169,6 +179,7 @@ endblock %} {% block subpage_content %}
         </div>
         {% endfor %}
       </div>
+
       <div class="cs-pf">
         <button class="cs-btn-outline w100">
           <svg
@@ -189,9 +200,27 @@ endblock %} {% block subpage_content %}
     <aside class="cs-panel" id="notesPanel">
       <div class="cs-ph">
         <div>
-          <div class="cs-ph-title">INFO <em>2602</em></div>
-          <div class="cs-ph-sub">12 notes · 3 collaborators</div>
+          <div class="cs-ph-title">
+            {% if courses and selected_course_id %} {% set selected = (courses |
+            selectattr('id', 'equalto', selected_course_id) | list | first) %}
+            {% if selected %} {{ selected.code.split(' ')[0] }}
+            <em
+              >{{ selected.code.split(' ')[1] if ' ' in selected.code else ''
+              }}</em
+            >
+            {% else %} Course {% endif %} {% elif courses %} {{
+            courses[0].code.split(' ')[0] }}
+            <em
+              >{{ courses[0].code.split(' ')[1] if ' ' in courses[0].code else
+              '' }}</em
+            >
+            {% else %} Course {% endif %}
+          </div>
+          <div class="cs-ph-sub">
+            {{ course_notes|length }} notes · 3 collaborators
+          </div>
         </div>
+
         <button class="cs-icon-btn sm" id="closeNotesBtn">
           <svg
             width="13"
@@ -205,6 +234,7 @@ endblock %} {% block subpage_content %}
           </svg>
         </button>
       </div>
+
       <div class="cs-note-cards">
         {% for course_note in course_notes %}
         <a
@@ -253,6 +283,7 @@ endblock %} {% block subpage_content %}
             <s>S</s>
           </button>
         </div>
+
         <div class="cs-tg">
           <button
             class="cs-tb-btn"
@@ -279,6 +310,7 @@ endblock %} {% block subpage_content %}
             ¶
           </button>
         </div>
+
         <div class="cs-tg">
           <button class="cs-tb-btn" id="btn-ul" title="Bullet list">
             <svg
@@ -297,6 +329,7 @@ endblock %} {% block subpage_content %}
               <circle cx="4" cy="18" r="1.5" fill="currentColor" />
             </svg>
           </button>
+
           <button class="cs-tb-btn" id="btn-ol" title="Numbered list">
             <svg
               width="14"
@@ -311,6 +344,7 @@ endblock %} {% block subpage_content %}
               <line x1="10" y1="18" x2="21" y2="18" />
             </svg>
           </button>
+
           <button class="cs-tb-btn" id="btn-quote" title="Blockquote">
             <svg
               width="14"
@@ -328,6 +362,7 @@ endblock %} {% block subpage_content %}
               />
             </svg>
           </button>
+
           <button class="cs-tb-btn" id="btn-code" title="Inline code">
             <svg
               width="14"
@@ -342,6 +377,7 @@ endblock %} {% block subpage_content %}
             </svg>
           </button>
         </div>
+
         <div class="cs-tg">
           <button class="cs-tb-btn" id="btn-left" title="Left (Ctrl+L)">
             <svg
@@ -357,6 +393,7 @@ endblock %} {% block subpage_content %}
               <line x1="3" y1="18" x2="18" y2="18" />
             </svg>
           </button>
+
           <button class="cs-tb-btn" id="btn-center" title="Center (Ctrl+E)">
             <svg
               width="14"
@@ -371,6 +408,7 @@ endblock %} {% block subpage_content %}
               <line x1="4" y1="18" x2="20" y2="18" />
             </svg>
           </button>
+
           <button class="cs-tb-btn" id="btn-right" title="Right (Ctrl+R)">
             <svg
               width="14"
@@ -386,6 +424,7 @@ endblock %} {% block subpage_content %}
             </svg>
           </button>
         </div>
+
         <div class="cs-tg">
           <div class="cs-hl-wrap">
             <button class="cs-tb-btn cs-hl-btn" id="hlBtn" title="Highlight">
@@ -440,6 +479,7 @@ endblock %} {% block subpage_content %}
             </div>
           </div>
         </div>
+
         <div class="cs-tg">
           <select class="cs-font-sel" id="fontPicker">
             <option value="'DM Sans',sans-serif">DM Sans</option>
@@ -449,6 +489,7 @@ endblock %} {% block subpage_content %}
             <option value="'Source Code Pro',monospace">Mono</option>
           </select>
         </div>
+
         <div class="cs-tg">
           <button class="cs-tb-btn" id="btn-img" title="Insert image">
             <svg
@@ -471,6 +512,7 @@ endblock %} {% block subpage_content %}
             style="display: none"
           />
         </div>
+
         <div class="cs-tg cs-tg-end">
           <button class="cs-tb-btn" id="btn-undo" title="Undo (Ctrl+Z)">
             <svg
@@ -485,6 +527,7 @@ endblock %} {% block subpage_content %}
               <path d="M3 13A9 9 0 1 0 6 6.7L3 13" />
             </svg>
           </button>
+
           <button class="cs-tb-btn" id="btn-redo" title="Redo (Ctrl+Y)">
             <svg
               width="14"
@@ -498,6 +541,7 @@ endblock %} {% block subpage_content %}
               <path d="M21 13A9 9 0 1 1 18 6.7L21 13" />
             </svg>
           </button>
+
           <button class="cs-rec-btn" id="recBtn">
             <span class="cs-rec-dot"></span><span id="recLabel">Record</span>
           </button>
@@ -517,6 +561,7 @@ endblock %} {% block subpage_content %}
           <div class="cs-div-mark">✦</div>
           <div class="cs-div-line"></div>
         </div>
+
         <div
           class="cs-content"
           id="noteEditor"
@@ -525,6 +570,7 @@ endblock %} {% block subpage_content %}
         >
           {{ note.content | safe if note else '' }}
         </div>
+
         <div class="cs-audio-sec">
           <div class="cs-audio-head">
             <svg
@@ -566,7 +612,6 @@ endblock %} {% block subpage_content %}
   </div>
 </div>
 
-<!-- Recording overlay -->
 <div class="cs-rec-overlay" id="recOverlay">
   <div class="cs-rec-pulse"></div>
   <div class="cs-rec-info">
@@ -578,12 +623,12 @@ endblock %} {% block subpage_content %}
 
 <script>
   window.COSCRIBE_NOTE = {
-    isNew: {{ "true" if is_new else "false" }},
-    noteId: {{ note.id if note else "null" }},
-    courseId: {{ note.course_id if note else selected_course_id }}
+    isNew: {{ is_new|tojson }},
+    noteId: {{ (note.id if note else None)|tojson }},
+    courseId: {{ (note.course_id if note else selected_course_id)|tojson }}
   };
 </script>
 
 {% endblock %} {% block subpage_scripts %}
-<script src="{{ url_for('static', path='js/notes.js') }}?v=3"></script>
+<script src="{{ url_for('static', path='js/notes.js') }}?v=3889886"></script>
 {% endblock %}
