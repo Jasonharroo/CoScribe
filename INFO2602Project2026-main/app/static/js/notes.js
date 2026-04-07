@@ -278,8 +278,9 @@ async function startRec() {
     chunks = [];
 
     mRec.ondataavailable = (e) => chunks.push(e.data);
-    mRec.onstop = () => {
-      addClip(new Blob(chunks, { type: "audio/webm" }), recSecs);
+    mRec.onstop = async () => {
+      const blob = new Blob(chunks, { type: "audio/webm" });
+      await uploadClip(blob, recSecs);
       stream.getTracks().forEach((t) => t.stop());
     };
 
@@ -319,16 +320,120 @@ document.getElementById("recBtn")?.addEventListener("click", () => {
 
 document.getElementById("recStop")?.addEventListener("click", stopRec);
 
-function addClip(blob, dur) {
-  const url = URL.createObjectURL(blob);
+async function uploadClip(blob, dur) {
+  const noteId = window.COSCRIBE_NOTE?.noteId;
+
+  if (!noteId) {
+    alert("Please save the note before adding a voice recording.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("note_id", String(noteId));
+  formData.append("duration_seconds", String(dur));
+  formData.append("audio", blob, `voice-note-${Date.now()}.webm`);
+
+  try {
+    const res = await fetch("/api/voice-notes/", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to upload voice note");
+    }
+
+    const saved = await res.json();
+    addClip(saved.file_path, saved.duration_seconds, saved.id);
+  } catch (err) {
+    console.error(err);
+    alert("Could not save voice note.");
+  }
+}
+
+function renderAudioEmptyState() {
+  const audioList = document.getElementById("audioList");
+  if (!audioList) return;
+
+  const existingItems = audioList.querySelectorAll(".cs-audio-item");
+  const existingEmpty = audioList.querySelector(".cs-nc.active");
+
+  if (existingItems.length === 0 && !existingEmpty) {
+    audioList.insertAdjacentHTML(
+      "beforeend",
+      `
+      <div class="cs-nc active">
+        <div class="cs-nc-title">No recordings yet</div>
+        <div class="cs-nc-excerpt">
+          Record audio and it will appear here.
+        </div>
+      </div>
+      `
+    );
+  }
+}
+
+async function deleteVoiceNote(voiceNoteId, item, deleteBtn, audioEl, playBtn) {
+  if (!voiceNoteId) {
+    alert("This recording cannot be deleted because it has no ID.");
+    return;
+  }
+
+  const confirmed = window.confirm(
+    "Are you sure you want to delete this recording?"
+  );
+  if (!confirmed) return;
+
+  try {
+    if (deleteBtn) {
+      deleteBtn.disabled = true;
+      deleteBtn.style.opacity = "0.6";
+    }
+
+    const res = await fetch(`/api/voice-notes/${voiceNoteId}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to delete voice note");
+    }
+
+    if (audioEl) {
+      audioEl.pause();
+      audioEl.currentTime = 0;
+    }
+
+    if (playBtn) {
+      playBtn.textContent = "▶";
+    }
+
+    item?.remove();
+    renderAudioEmptyState();
+  } catch (err) {
+    console.error("Voice note delete failed:", err);
+    alert("Could not delete this recording.");
+
+    if (deleteBtn) {
+      deleteBtn.disabled = false;
+      deleteBtn.style.opacity = "";
+    }
+  }
+}
+
+function addClip(audioSrc, dur, voiceNoteId = null) {
   const m = Math.floor(dur / 60);
   const s = dur % 60;
 
+  const emptyState = document.querySelector("#audioList .cs-nc.active");
+  if (emptyState) emptyState.remove();
+
   const item = document.createElement("div");
   item.className = "cs-audio-item";
+  if (voiceNoteId) item.dataset.voiceNoteId = voiceNoteId;
 
   const pb = document.createElement("button");
   pb.className = "cs-play";
+  pb.type = "button";
   pb.textContent = "▶";
 
   const wv = document.createElement("div");
@@ -339,21 +444,58 @@ function addClip(blob, dur) {
   du.className = "cs-dur-label";
   du.textContent = `${m}:${s.toString().padStart(2, "0")}`;
 
-  const au = new Audio(url);
-  pb.addEventListener("click", () => {
-    if (au.paused) {
-      au.play();
-      pb.textContent = "⏸";
-    } else {
-      au.pause();
-      pb.textContent = "▶";
+  const del = document.createElement("button");
+  del.className = "cs-icon-btn sm cs-audio-delete";
+  del.type = "button";
+  del.title = "Delete recording";
+  del.setAttribute("aria-label", "Delete recording");
+  del.innerHTML = `
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <path d="M3 6h18" />
+      <path d="M8 6V4h8v2" />
+      <path d="M19 6l-1 14H6L5 6" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+    </svg>
+  `;
+
+  const au = document.createElement("audio");
+  au.preload = "metadata";
+  au.src = audioSrc;
+
+  pb.addEventListener("click", async () => {
+    try {
+      if (au.paused) {
+        await au.play();
+        pb.textContent = "⏸";
+      } else {
+        au.pause();
+        pb.textContent = "▶";
+      }
+    } catch (err) {
+      console.error("Audio playback failed:", err);
+      alert("Could not play this recording.");
     }
-    au.onended = () => {
-      pb.textContent = "▶";
-    };
   });
 
-  item.append(pb, wv, du);
+  au.addEventListener("ended", () => {
+    pb.textContent = "▶";
+  });
+
+  au.addEventListener("pause", () => {
+    if (au.currentTime < au.duration) {
+      pb.textContent = "▶";
+    }
+  });
+
+  item.append(pb, wv, du, del, au);
   document.getElementById("audioList")?.appendChild(item);
 }
 
@@ -367,7 +509,65 @@ function genWave(el, n = 36) {
   }
 }
 
-document.querySelectorAll(".cs-wave").forEach(genWave);
+function wireExistingAudioItems() {
+  document.querySelectorAll("#audioList .cs-audio-item").forEach((item) => {
+    const btn = item.querySelector(".cs-play");
+    const audio = item.querySelector("audio");
+    const wave = item.querySelector(".cs-wave");
+
+    if (wave) genWave(wave);
+    if (!btn || !audio) return;
+    if (btn.dataset.bound === "true") return;
+
+    btn.dataset.bound = "true";
+
+    btn.addEventListener("click", async () => {
+      try {
+        if (audio.paused) {
+          await audio.play();
+          btn.textContent = "⏸";
+        } else {
+          audio.pause();
+          btn.textContent = "▶";
+        }
+      } catch (err) {
+        console.error("Audio playback failed:", err);
+        alert("Could not play this recording.");
+      }
+    });
+
+    audio.addEventListener("ended", () => {
+      btn.textContent = "▶";
+    });
+
+    audio.addEventListener("pause", () => {
+      if (audio.currentTime < audio.duration) {
+        btn.textContent = "▶";
+      }
+    });
+  });
+}
+
+wireExistingAudioItems();
+
+const audioListEl = document.getElementById("audioList");
+
+audioListEl?.addEventListener("click", (e) => {
+  const deleteBtn = e.target.closest(".cs-audio-delete");
+  if (!deleteBtn) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  const item = deleteBtn.closest(".cs-audio-item");
+  if (!item) return;
+
+  const voiceNoteId = item.dataset.voiceNoteId;
+  const audio = item.querySelector("audio");
+  const playBtn = item.querySelector(".cs-play");
+
+  deleteVoiceNote(voiceNoteId, item, deleteBtn, audio, playBtn);
+});
 
 window.togglePlay = function (btn) {
   btn.textContent = btn.textContent === "▶" ? "⏸" : "▶";

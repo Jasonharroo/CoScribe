@@ -1,7 +1,7 @@
 {% extends "authenticated-base.html" %} {% block title %}CoScribe — Notes{%
 endblock %} {% block external_css %}
 <link
-  href="{{ url_for('static', path='css/notes.css') }}?v=3889886"
+  href="{{ url_for('static', path='css/notes.css') }}?v=3889887"
   rel="stylesheet"
 />
 {% endblock %} {% block additional_styles %} #sidebar, .navbar { display: none
@@ -29,6 +29,7 @@ endblock %} {% block subpage_content %}
           <rect x="14" y="3" width="7" height="18" rx="1" />
         </svg>
       </button>
+
       <a href="/app" class="cs-logo">
         <img
           class="cs-logo-img"
@@ -39,10 +40,10 @@ endblock %} {% block subpage_content %}
             this.nextElementSibling.classList.add('visible');
           "
         />
-        <span class="cs-logo-text"
-          ><span class="cs-logo-co">Co</span
-          ><span class="cs-logo-scribe">Scribe.</span></span
-        >
+        <span class="cs-logo-text">
+          <span class="cs-logo-co">Co</span>
+          <span class="cs-logo-scribe">Scribe.</span>
+        </span>
       </a>
     </div>
 
@@ -53,12 +54,6 @@ endblock %} {% block subpage_content %}
     </div>
 
     <div class="cs-nav-r">
-      <div class="cs-nav-avatars">
-        <div class="cs-av" style="background: #e05a47">M</div>
-        <div class="cs-av" style="background: #5b7fa6">K</div>
-        <div class="cs-live-dot"></div>
-      </div>
-
       <button class="cs-icon-btn" id="themeBtn" title="Night mode">
         <svg
           class="cs-icon-moon"
@@ -217,7 +212,8 @@ endblock %} {% block subpage_content %}
             {% else %} Course {% endif %}
           </div>
           <div class="cs-ph-sub">
-            {{ course_notes|length }} notes · 3 collaborators
+            {{ course_notes|length }} note{{ '' if course_notes|length == 1 else
+            's' }}
           </div>
         </div>
 
@@ -556,6 +552,7 @@ endblock %} {% block subpage_content %}
           value="{{ note.title if note else '' }}"
           placeholder="Note title…"
         />
+
         <div class="cs-divider">
           <div class="cs-div-line"></div>
           <div class="cs-div-mark">✦</div>
@@ -586,27 +583,60 @@ endblock %} {% block subpage_content %}
             </svg>
             Audio Recordings
           </div>
+
           <div id="audioList">
-            <div class="cs-audio-item">
-              <button class="cs-play" onclick="togglePlay(this)">▶</button>
-              <div class="cs-wave" id="wave0"></div>
-              <span class="cs-dur-label">2:34</span>
+            {% if voice_notes %} {% for voice_note in voice_notes %}
+            <div class="cs-audio-item" data-voice-note-id="{{ voice_note.id }}">
+              <button class="cs-play" type="button">▶</button>
+              <div class="cs-wave"></div>
+
+              <span class="cs-dur-label">
+                {% set total = voice_note.duration_seconds or 0 %} {{ total //
+                60 }}:{{ '%02d' % (total % 60) }}
+              </span>
+
+              <button
+                class="cs-icon-btn sm cs-audio-delete"
+                type="button"
+                title="Delete recording"
+                aria-label="Delete recording"
+              >
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M3 6h18" />
+                  <path d="M8 6V4h8v2" />
+                  <path d="M19 6l-1 14H6L5 6" />
+                  <path d="M10 11v6" />
+                  <path d="M14 11v6" />
+                </svg>
+              </button>
+
+              <audio
+                preload="metadata"
+                src="{{ voice_note.file_path }}"
+              ></audio>
             </div>
+            {% endfor %} {% else %}
+            <div class="cs-nc active">
+              <div class="cs-nc-title">No recordings yet</div>
+              <div class="cs-nc-excerpt">
+                Record audio and it will appear here.
+              </div>
+            </div>
+            {% endif %}
           </div>
         </div>
       </div>
 
       <div class="cs-statusbar">
-        <div class="cs-live-dot"></div>
-        <span>Live · 2 others editing</span>
-        <div style="display: flex">
-          <div class="cs-av xs" style="background: #5b7fa6; margin-left: 0">
-            M
-          </div>
-          <div class="cs-av xs" style="background: #8e44ad">K</div>
-        </div>
         <span style="flex: 1"></span>
-        <span class="cs-saved" id="savedLbl">Saved just now</span>
+        <span class="cs-saved" id="savedLbl">Not saved yet</span>
       </div>
     </main>
   </div>
@@ -630,5 +660,5 @@ endblock %} {% block subpage_content %}
 </script>
 
 {% endblock %} {% block subpage_scripts %}
-<script src="{{ url_for('static', path='js/notes.js') }}?v=3889886"></script>
+<script src="{{ url_for('static', path='js/notes.js') }}?v=3889887"></script>
 {% endblock %}

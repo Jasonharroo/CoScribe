@@ -4,6 +4,8 @@ from sqlmodel import Session
 from app.database import get_session
 from app.repositories.note import NoteRepository
 from app.repositories.course import CourseRepository
+from app.repositories.voiceNote import VoiceNoteRepository
+from app.services.voice_note_service import VoiceNoteService
 from app.services.note_service import NoteService
 from app.services.course_service import CourseService
 from app.schemas.note import NoteCreate, NoteUpdate
@@ -17,6 +19,10 @@ api_router = APIRouter(prefix="/notes", tags=["Notes API"])
 def get_note_service(db: Session = Depends(get_session)):
     repo = NoteRepository(db)
     return NoteService(repo)
+
+def get_voice_note_service(db: Session = Depends(get_session)):
+    repo = VoiceNoteRepository(db)
+    return VoiceNoteService(repo)
 
 @router.get("/new", response_class=HTMLResponse)
 def new_note_view(
@@ -41,6 +47,7 @@ def new_note_view(
             "courses": courses,
             "selected_course_id": selected_course_id,
             "course_notes": [],
+            "voice_notes": [],
         }
     )
 
@@ -51,6 +58,7 @@ def note_view(
     request: Request,
     user: AuthDep,
     service: NoteService = Depends(get_note_service),
+    voice_note_service: VoiceNoteService = Depends(get_voice_note_service),
     db: Session = Depends(get_session),
 ):
     note = service.get_note(note_id)
@@ -65,6 +73,7 @@ def note_view(
     course_service = CourseService(course_repo)
     courses = course_service.get_all_courses()
     course_notes = service.get_notes_by_owner_and_course(user.id, note.course_id)
+    voice_notes = voice_note_service.get_voice_notes_for_note(note.id)
 
     return templates.TemplateResponse(
         request=request,
@@ -76,6 +85,7 @@ def note_view(
             "courses": courses,
             "selected_course_id": note.course_id,
             "course_notes": course_notes,
+            "voice_notes": voice_notes,
         }
     )
 
