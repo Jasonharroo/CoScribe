@@ -410,9 +410,10 @@ block external_css %}
       </svg>
     </button>
 
-    <a
-      href="/notes/new"
+    <button
+      type="button"
       class="cs-btn-red"
+      id="openNewNoteModal"
       style="
         padding: 7px 16px;
         font-size: 0.82rem;
@@ -421,6 +422,7 @@ block external_css %}
         display: flex;
         align-items: center;
         gap: 6px;
+        border: none;
       "
     >
       <svg
@@ -434,7 +436,7 @@ block external_css %}
         <path d="M12 5v14M5 12h14" />
       </svg>
       New Note
-    </a>
+    </button>
 
     <div
       class="cs-av"
@@ -478,11 +480,11 @@ block external_css %}
       <div class="home-stat-lbl">Courses active</div>
     </div>
     <div class="home-stat">
-      <div class="home-stat-val">3</div>
+      <div class="home-stat-val">{{ collaborator_count }}</div>
       <div class="home-stat-lbl">Collaborators</div>
     </div>
     <div class="home-stat">
-      <div class="home-stat-val">5</div>
+      <div class="home-stat-val">{{ voice_note_count }}</div>
       <div class="home-stat-lbl">Audio clips</div>
     </div>
   </div>
@@ -493,7 +495,11 @@ block external_css %}
   </div>
 
   <div class="home-note-grid">
-    <a href="/notes/new" class="home-note-new">
+    <div
+      class="home-note-new"
+      id="openNewNoteModalCard"
+      style="cursor: pointer"
+    >
       <div class="home-note-new-icon">
         <svg
           width="20"
@@ -507,11 +513,16 @@ block external_css %}
         </svg>
       </div>
       <span>New note</span>
-    </a>
+    </div>
 
     {% for note in notes %}
     <a href="/notes/{{ note.id }}" class="home-note-card">
-      <div class="hnc-tag">Course {{ note.course_id }}</div>
+      {% set note_course = (courses | selectattr('id', 'equalto',
+      note.course_id) | list | first) %}
+      <div class="hnc-tag">
+        {% if note_course %} {{ note_course.code }} {% else %} Course {{
+        note.course_id }} {% endif %}
+      </div>
       <div class="hnc-title">{{ note.title }}</div>
       <div class="hnc-excerpt">
         {{ note.content | striptags | truncate(140, True, '...') }}
@@ -552,6 +563,100 @@ block external_css %}
     {% endfor %}
   </div>
 </div>
+
+<div
+  id="newNoteModal"
+  style="
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  "
+>
+  <div
+    style="
+      width: min(480px, 92vw);
+      background: var(--cs-white);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    "
+  >
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      "
+    >
+      <h3 style="margin: 0; font-size: 1.1rem">Choose a course</h3>
+      <button type="button" id="closeNewNoteModal" class="cs-icon-btn">
+        ✕
+      </button>
+    </div>
+
+    {% if courses %}
+    <p style="margin-bottom: 12px; color: var(--cs-ink-3)">
+      Select the course this note belongs to.
+    </p>
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      {% for course in courses %}
+      <a
+        href="/notes/new?course_id={{ course.id }}"
+        style="
+          display: block;
+          text-decoration: none;
+          padding: 12px 14px;
+          border: 1px solid var(--cs-border);
+          border-radius: 12px;
+          color: var(--cs-ink);
+          background: var(--cs-white);
+        "
+      >
+        <strong>{{ course.code }}</strong><br />
+        <span style="color: var(--cs-ink-3); font-size: 0.9rem"
+          >{{ course.name }}</span
+        >
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="margin-bottom: 12px; color: var(--cs-ink-3)">
+      You have not added any courses yet.
+    </p>
+    <a href="/courses" class="home-sec-action">Go to Manage Courses →</a>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  const newNoteModal = document.getElementById("newNoteModal");
+  const openNewNoteModal = document.getElementById("openNewNoteModal");
+  const openNewNoteModalCard = document.getElementById("openNewNoteModalCard");
+  const closeNewNoteModal = document.getElementById("closeNewNoteModal");
+
+  openNewNoteModal?.addEventListener("click", () => {
+    if (newNoteModal) newNoteModal.style.display = "flex";
+  });
+
+  openNewNoteModalCard?.addEventListener("click", () => {
+    if (newNoteModal) newNoteModal.style.display = "flex";
+  });
+
+  closeNewNoteModal?.addEventListener("click", () => {
+    if (newNoteModal) newNoteModal.style.display = "none";
+  });
+
+  newNoteModal?.addEventListener("click", (e) => {
+    if (e.target === newNoteModal) {
+      newNoteModal.style.display = "none";
+    }
+  });
+</script>
 
 <script>
   const bod = document.body;

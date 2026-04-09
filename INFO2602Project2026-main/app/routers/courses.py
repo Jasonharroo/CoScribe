@@ -55,7 +55,7 @@ def manage_courses_view(
 
     return templates.TemplateResponse(
         request=request,
-        name="courses.html",
+        name="courses_view_page.html",
         context={
             "user": user,
             "courses": courses,

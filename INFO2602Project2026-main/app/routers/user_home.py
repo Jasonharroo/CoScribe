@@ -7,6 +7,8 @@ from app.services.note_service import NoteService
 from app.repositories.user_course import UserCourseRepository
 from app.services.user_course_service import UserCourseService
 from app.models.course import Course
+from app.models.voiceNote import VoiceNote
+from app.models.collab import Collaboration
 from sqlmodel import select
 from . import router, templates
 
@@ -34,6 +36,14 @@ async def user_home_view(
     else:
         courses = []
 
+    voice_note_count = len(
+    db.exec(select(VoiceNote).where(VoiceNote.owner_id == user.id)).all()
+    )
+
+    collaborator_count = len(
+        db.exec(select(Collaboration).where(Collaboration.user_id == user.id)).all()
+    )
+
     return templates.TemplateResponse(
         request=request,
         name="home.html",
@@ -43,5 +53,7 @@ async def user_home_view(
             "note_count": len(notes),
             "courses": courses,
             "course_count": len(courses),
+            "voice_note_count": voice_note_count,
+            "collaborator_count": collaborator_count,
         }
     )

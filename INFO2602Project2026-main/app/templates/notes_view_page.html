@@ -1,0 +1,854 @@
+{% extends "base.html" %} {% block title %}CoScribe — All Notes{% endblock %} {%
+block external_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=DM+Mono:wght@400;500&display=swap"
+  rel="stylesheet"
+/>
+{% endblock %} {% block additional_styles %}
+<style>
+  #content {
+    padding: 0 !important;
+    background: #f6f4f0 !important;
+  }
+  body {
+    overflow-x: hidden;
+    padding-bottom: 80px;
+    font-family: "Montserrat", sans-serif;
+  }
+</style>
+{% endblock %} {% block internal_css %}
+<style>
+  :root {
+    --bg: #f6f4f0;
+    --bg2: #edeae3;
+    --white: #ffffff;
+    --coral: #ff6b5b;
+    --coral-dk: #e5503f;
+    --coral-lt: #fff0ee;
+    --ink: #17110d;
+    --ink2: #4a3f35;
+    --ink3: #9c9088;
+    --sh-sm: 0 2px 14px rgba(0, 0, 0, 0.07);
+    --sh-md: 0 6px 30px rgba(0, 0, 0, 0.11);
+    --nav-bg: rgba(246, 244, 240, 0.93);
+    --nav-sh: 0 1px 0 rgba(0, 0, 0, 0.05), 0 4px 18px rgba(0, 0, 0, 0.06);
+    --pill: 999px;
+    --r-lg: 22px;
+    --r-xl: 28px;
+    --dur: 0.2s;
+    --font: "Montserrat", sans-serif;
+    --mono: "DM Mono", monospace;
+  }
+  [data-theme="dark"] {
+    --bg: #100e0b;
+    --bg2: #1a1814;
+    --white: #1e1c17;
+    --coral-lt: #241310;
+    --ink: #f0ebe3;
+    --ink2: #c4b8ac;
+    --ink3: #786e64;
+    --sh-sm: 0 2px 14px rgba(0, 0, 0, 0.28);
+    --sh-md: 0 6px 30px rgba(0, 0, 0, 0.38);
+    --nav-bg: rgba(16, 14, 11, 0.97);
+  }
+  .ci-sun {
+    display: none;
+  }
+  .ci-moon {
+    display: block;
+  }
+  [data-theme="dark"] .ci-sun {
+    display: block;
+  }
+  [data-theme="dark"] .ci-moon {
+    display: none;
+  }
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  .an-root {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    transition:
+      background var(--dur),
+      color var(--dur);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .an-nav {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 58px;
+    background: var(--nav-bg);
+    box-shadow: var(--nav-sh);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    transition: background var(--dur);
+  }
+  .an-nav-l {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .an-nav-r {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cs-logo {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+  }
+  .cs-logo-img {
+    height: 28px;
+    width: auto;
+    object-fit: contain;
+  }
+  .cs-logo-text {
+    display: none;
+    align-items: center;
+  }
+  .cs-logo-text.show {
+    display: flex;
+  }
+  .cs-logo-co {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--ink3);
+  }
+  .cs-logo-scribe {
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: var(--coral);
+    letter-spacing: -0.02em;
+  }
+  .cs-icon-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink3);
+    transition:
+      background var(--dur),
+      color var(--dur);
+  }
+  .cs-icon-btn:hover {
+    background: var(--bg2);
+    color: var(--ink);
+  }
+  .cs-btn-coral {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 20px;
+    background: var(--coral);
+    color: #fff;
+    border: none;
+    border-radius: var(--pill);
+    cursor: pointer;
+    font-family: var(--font);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    box-shadow: 0 4px 14px rgba(255, 107, 91, 0.26);
+    transition:
+      background var(--dur),
+      transform 0.14s;
+  }
+  .cs-btn-coral:hover {
+    background: var(--coral-dk);
+    color: #fff;
+    transform: translateY(-1px);
+  }
+  .cs-av-chip {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--coral);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+  .cs-av {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.58rem;
+    font-weight: 700;
+    border: 1.5px solid var(--white);
+    margin-left: -5px;
+  }
+  .cs-av:first-child {
+    margin-left: 0;
+  }
+
+  .an-body {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 36px 28px 60px;
+  }
+
+  .an-header {
+    margin-bottom: 28px;
+  }
+  .an-breadcrumb {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--ink3);
+    margin-bottom: 8px;
+  }
+  .an-breadcrumb a {
+    color: var(--coral);
+    text-decoration: none;
+  }
+  .an-header h1 {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--ink);
+    letter-spacing: -0.04em;
+  }
+  .an-header p {
+    font-size: 0.86rem;
+    color: var(--ink3);
+    font-weight: 500;
+    margin-top: 5px;
+  }
+
+  .an-filters {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 26px;
+    flex-wrap: wrap;
+  }
+  .an-filter-pill {
+    padding: 7px 16px;
+    background: var(--white);
+    border: none;
+    border-radius: var(--pill);
+    font-family: var(--font);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--ink3);
+    cursor: pointer;
+    box-shadow: var(--sh-sm);
+    transition: all var(--dur);
+  }
+  .an-filter-pill:hover,
+  .an-filter-pill.active {
+    background: var(--coral);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(255, 107, 91, 0.26);
+  }
+  .an-search {
+    flex: 1;
+    min-width: 180px;
+    max-width: 320px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--white);
+    border-radius: var(--pill);
+    padding: 9px 16px;
+    box-shadow: var(--sh-sm);
+  }
+  .an-search input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: var(--font);
+    font-size: 0.82rem;
+    color: var(--ink);
+    width: 100%;
+    font-weight: 500;
+  }
+  .an-search input::placeholder {
+    color: var(--ink3);
+  }
+  .an-sort {
+    padding: 7px 14px;
+    background: var(--white);
+    border: none;
+    border-radius: var(--pill);
+    font-family: var(--font);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--ink2);
+    cursor: pointer;
+    box-shadow: var(--sh-sm);
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%239c9088'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+  }
+
+  .an-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+  }
+
+  .an-card {
+    background: var(--white);
+    border-radius: var(--r-xl);
+    padding: 20px 22px;
+    text-decoration: none;
+    display: block;
+    box-shadow: var(--sh-sm);
+    transition:
+      box-shadow var(--dur),
+      transform 0.14s;
+    position: relative;
+  }
+  .an-card:hover {
+    box-shadow: var(--sh-md);
+    transform: translateY(-2px);
+  }
+  .an-card-course {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    background: var(--coral-lt);
+    color: var(--coral);
+    border-radius: var(--pill);
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .an-card-title {
+    font-size: 0.98rem;
+    font-weight: 800;
+    color: var(--ink);
+    margin-bottom: 7px;
+    line-height: 1.3;
+  }
+  .an-card-excerpt {
+    font-size: 0.77rem;
+    color: var(--ink3);
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-weight: 500;
+  }
+  .an-card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 15px;
+    padding-top: 12px;
+    border-top: 1px solid var(--bg2);
+    font-size: 0.7rem;
+    color: var(--ink3);
+    font-weight: 600;
+  }
+  .an-card-avs {
+    display: flex;
+    align-items: center;
+  }
+  .an-card-delete {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--ink3);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition:
+      opacity var(--dur),
+      background var(--dur),
+      color var(--dur);
+  }
+  .an-card:hover .an-card-delete {
+    opacity: 1;
+  }
+  .an-card-delete:hover {
+    background: #ffeaea;
+    color: #e05a47;
+  }
+
+  .an-empty {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--ink3);
+  }
+  .an-empty-icon {
+    font-size: 3.5rem;
+    margin-bottom: 16px;
+    opacity: 0.35;
+  }
+  .an-empty p {
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  .an-empty a {
+    color: var(--coral);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .an-loading {
+    display: flex;
+    justify-content: center;
+    padding: 60px;
+    color: var(--ink3);
+    font-weight: 600;
+    font-size: 0.88rem;
+  }
+
+  @media (max-width: 640px) {
+    .an-nav {
+      padding: 0 14px;
+    }
+    .an-body {
+      padding: 24px 14px 40px;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="an-root" id="anRoot">
+  <nav class="an-nav">
+    <div class="an-nav-l">
+      <a href="/app" class="cs-logo">
+        <img
+          class="cs-logo-img"
+          src="{{ url_for('static', path='img/logo.png') }}"
+          alt="CoScribe"
+          onerror="
+            this.style.display = 'none';
+            document.getElementById('anLogoTxt').classList.add('show');
+          "
+        />
+        <span class="cs-logo-text" id="anLogoTxt">
+          <span class="cs-logo-co">Co</span
+          ><span class="cs-logo-scribe">Scribe.</span>
+        </span>
+      </a>
+    </div>
+    <div class="an-nav-r">
+      <button class="cs-icon-btn" id="themeBtn" title="Night mode">
+        <svg
+          class="ci-moon"
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+        <svg
+          class="ci-sun"
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+      </button>
+      <button type="button" class="cs-btn-coral" id="openNewNoteModal">
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <path d="M12 5v14M5 12h14" />
+        </svg>
+        New Note
+      </button>
+      <div class="cs-av-chip" title="{{ user.username }}">
+        {{ user.username[:1].upper() }}
+      </div>
+      <a href="/logout" class="cs-icon-btn" title="Logout">
+        <svg
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+      </a>
+    </div>
+  </nav>
+
+  <div class="an-body">
+    <div class="an-header">
+      <div class="an-breadcrumb"><a href="/app">Dashboard</a> / All Notes</div>
+      <h1>All Notes</h1>
+      <p id="noteCountLabel">Loading your notes…</p>
+    </div>
+
+    <div class="an-filters">
+      <div class="an-search">
+        <svg
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.35-4.35" />
+        </svg>
+        <input type="text" id="searchInput" placeholder="Search notes…" />
+      </div>
+      <div id="courseFilters"></div>
+      <select class="an-sort" id="sortSelect">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="alpha">A → Z</option>
+      </select>
+    </div>
+
+    <div class="an-loading" id="loadingState">Loading…</div>
+    <div class="an-grid" id="notesGrid" style="display: none"></div>
+    <div class="an-empty" id="emptyState" style="display: none">
+      <div class="an-empty-icon">📝</div>
+      <p>
+        No notes found.<br />
+        <a href="#" id="openEmptyStateNewNote">Create your first note →</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<div
+  id="newNoteModal"
+  style="
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  "
+>
+  <div
+    style="
+      width: min(480px, 92vw);
+      background: var(--cs-white);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    "
+  >
+    <div
+      style="
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      "
+    >
+      <h3 style="margin: 0; font-size: 1.1rem">Choose a course</h3>
+      <button type="button" id="closeNewNoteModal" class="cs-icon-btn">
+        ✕
+      </button>
+    </div>
+
+    {% if courses %}
+    <p style="margin-bottom: 12px; color: var(--cs-ink-3)">
+      Select the course this note belongs to.
+    </p>
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      {% for course in courses %}
+      <a
+        href="/notes/new?course_id={{ course.id }}"
+        style="
+          display: block;
+          text-decoration: none;
+          padding: 12px 14px;
+          border: 1px solid var(--cs-border);
+          border-radius: 12px;
+          color: var(--cs-ink);
+          background: var(--cs-white);
+        "
+      >
+        <strong>{{ course.code }}</strong><br />
+        <span style="color: var(--cs-ink-3); font-size: 0.9rem"
+          >{{ course.name }}</span
+        >
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="margin-bottom: 12px; color: var(--cs-ink-3)">
+      You have not added any courses yet.
+    </p>
+    <a
+      href="/courses"
+      class="an-filter-pill"
+      style="text-decoration: none; display: inline-flex"
+      >Go to Manage Courses →</a
+    >
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  window.COURSE_MAP = {
+    {% for course in courses %}
+      "{{ course.id }}": {
+        "code": {{ course.code|tojson }},
+        "name": {{ course.name|tojson }}
+      }{% if not loop.last %},{% endif %}
+    {% endfor %}
+  };
+</script>
+
+<script>
+  const root = document.getElementById("anRoot");
+  if (localStorage.getItem("cs-theme") === "dark") {
+    root.setAttribute("data-theme", "dark");
+  }
+
+  document.getElementById("themeBtn").addEventListener("click", () => {
+    const d = root.getAttribute("data-theme") === "dark";
+    if (d) {
+      root.removeAttribute("data-theme");
+    } else {
+      root.setAttribute("data-theme", "dark");
+    }
+    localStorage.setItem("cs-theme", d ? "light" : "dark");
+  });
+
+  const newNoteModal = document.getElementById("newNoteModal");
+  const openNewNoteModal = document.getElementById("openNewNoteModal");
+  const closeNewNoteModal = document.getElementById("closeNewNoteModal");
+  const openEmptyStateNewNote = document.getElementById(
+    "openEmptyStateNewNote",
+  );
+
+  openNewNoteModal?.addEventListener("click", () => {
+    if (newNoteModal) newNoteModal.style.display = "flex";
+  });
+
+  closeNewNoteModal?.addEventListener("click", () => {
+    if (newNoteModal) newNoteModal.style.display = "none";
+  });
+
+  openEmptyStateNewNote?.addEventListener("click", (e) => {
+    e.preventDefault();
+    if (newNoteModal) newNoteModal.style.display = "flex";
+  });
+
+  newNoteModal?.addEventListener("click", (e) => {
+    if (e.target === newNoteModal) {
+      newNoteModal.style.display = "none";
+    }
+  });
+
+  let allNotes = [];
+  let activeCourseFilter = null;
+
+  async function loadNotes() {
+    try {
+      const res = await fetch("/api/notes/");
+      if (!res.ok) throw new Error("Failed to load notes");
+      allNotes = await res.json();
+      renderNotes();
+      document.getElementById("loadingState").style.display = "none";
+      document.getElementById("notesGrid").style.display = "";
+      document.getElementById("noteCountLabel").textContent =
+        `${allNotes.length} note${allNotes.length !== 1 ? "s" : ""} in your library`;
+
+      const courseIds = [...new Set(allNotes.map((n) => n.course_id))];
+      const filterEl = document.getElementById("courseFilters");
+      filterEl.style.cssText = "display:flex;gap:8px;flex-wrap:wrap";
+
+      const allBtn = document.createElement("button");
+      allBtn.className = "an-filter-pill active";
+      allBtn.textContent = "All";
+      allBtn.addEventListener("click", () => {
+        activeCourseFilter = null;
+        document
+          .querySelectorAll(".an-filter-pill")
+          .forEach((b) => b.classList.remove("active"));
+        allBtn.classList.add("active");
+        renderNotes();
+      });
+      filterEl.appendChild(allBtn);
+
+      courseIds.forEach((cid) => {
+        const btn = document.createElement("button");
+        btn.className = "an-filter-pill";
+
+        const course = window.COURSE_MAP?.[String(cid)];
+        btn.textContent = course ? course.code : `Course ${cid}`;
+        btn.addEventListener("click", () => {
+          activeCourseFilter = cid;
+          document
+            .querySelectorAll(".an-filter-pill")
+            .forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          renderNotes();
+        });
+        filterEl.appendChild(btn);
+      });
+    } catch (e) {
+      document.getElementById("loadingState").textContent =
+        "Failed to load notes. Please refresh.";
+    }
+  }
+
+  function renderNotes() {
+    const grid = document.getElementById("notesGrid");
+    const empty = document.getElementById("emptyState");
+    const q = document.getElementById("searchInput").value.toLowerCase();
+    const sort = document.getElementById("sortSelect").value;
+
+    let notes = [...allNotes];
+
+    if (activeCourseFilter !== null) {
+      notes = notes.filter((n) => n.course_id === activeCourseFilter);
+    }
+
+    if (q) {
+      notes = notes.filter(
+        (n) =>
+          n.title.toLowerCase().includes(q) ||
+          (n.content || "").toLowerCase().includes(q),
+      );
+    }
+
+    if (sort === "oldest") notes.sort((a, b) => a.id - b.id);
+    else if (sort === "alpha")
+      notes.sort((a, b) => a.title.localeCompare(b.title));
+    else notes.sort((a, b) => b.id - a.id);
+
+    if (notes.length === 0) {
+      grid.style.display = "none";
+      empty.style.display = "";
+      return;
+    }
+
+    grid.style.display = "";
+    empty.style.display = "none";
+    grid.innerHTML = "";
+
+    notes.forEach((note) => {
+      const card = document.createElement("a");
+      card.className = "an-card";
+      card.href = `/notes/${note.id}`;
+
+      const excerpt = (note.content || "")
+        .replace(/<[^>]*>/g, "")
+        .substring(0, 150);
+
+      const course = window.COURSE_MAP?.[String(note.course_id)];
+      const courseLabel = course
+        ? `${course.code} — ${course.name}`
+        : `Course ${note.course_id}`;
+
+      card.innerHTML = `
+        <button class="an-card-delete" onclick="deleteNote(event, ${note.id})" title="Delete note">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+            <path d="M10 11v6M14 11v6"/>
+          </svg>
+        </button>
+        <div class="an-card-course">${escHtml(courseLabel)}</div>
+        <div class="an-card-title">${escHtml(note.title)}</div>
+        <div class="an-card-excerpt">${escHtml(excerpt)}</div>
+        <div class="an-card-foot">
+          <div class="an-card-avs">
+            <div class="cs-av" style="background:var(--coral)">{{ user.username[:1].upper() }}</div>
+          </div>
+          <span>Note #${note.id}</span>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function escHtml(s) {
+    const d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  async function deleteNote(e, noteId) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm("Delete this note? This cannot be undone.")) return;
+
+    const res = await fetch(`/api/notes/${noteId}`, { method: "DELETE" });
+    if (res.ok) {
+      allNotes = allNotes.filter((n) => n.id !== noteId);
+      renderNotes();
+      document.getElementById("noteCountLabel").textContent =
+        `${allNotes.length} note${allNotes.length !== 1 ? "s" : ""} in your library`;
+    } else {
+      alert("Could not delete note. Please try again.");
+    }
+  }
+
+  document.getElementById("searchInput").addEventListener("input", renderNotes);
+  document.getElementById("sortSelect").addEventListener("change", renderNotes);
+
+  loadNotes();
+</script>
+{% endblock %} {% block subpage_scripts %}{% endblock %}

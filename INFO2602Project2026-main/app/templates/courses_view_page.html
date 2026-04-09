@@ -1,0 +1,903 @@
+{% extends "base.html" %} {% block title %}CoScribe — Manage Courses{% endblock
+%} {% block external_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=DM+Mono:wght@400;500&display=swap"
+  rel="stylesheet"
+/>
+{% endblock %} {% block additional_styles %}
+<style>
+  #sidebar,
+  .navbar {
+    display: none !important;
+  }
+  #content {
+    padding: 0 !important;
+    background: #f6f4f0 !important;
+  }
+  body {
+    overflow-x: hidden;
+    padding-bottom: 80px;
+    font-family: "Montserrat", sans-serif;
+  }
+</style>
+{% endblock %} {% block internal_css %}
+<style>
+  :root {
+    --bg: #f6f4f0;
+    --bg2: #edeae3;
+    --white: #ffffff;
+    --coral: #ff6b5b;
+    --coral-dk: #e5503f;
+    --coral-lt: #fff0ee;
+    --ink: #17110d;
+    --ink2: #4a3f35;
+    --ink3: #9c9088;
+    --sh-sm: 0 2px 14px rgba(0, 0, 0, 0.07);
+    --sh-md: 0 6px 30px rgba(0, 0, 0, 0.11);
+    --nav-bg: rgba(246, 244, 240, 0.93);
+    --nav-sh: 0 1px 0 rgba(0, 0, 0, 0.05), 0 4px 18px rgba(0, 0, 0, 0.06);
+    --pill: 999px;
+    --r-lg: 22px;
+    --r-xl: 28px;
+    --dur: 0.2s;
+    --font: "Montserrat", sans-serif;
+    --mono: "DM Mono", monospace;
+  }
+  [data-theme="dark"] {
+    --bg: #100e0b;
+    --bg2: #1a1814;
+    --white: #1e1c17;
+    --coral-lt: #241310;
+    --ink: #f0ebe3;
+    --ink2: #c4b8ac;
+    --ink3: #786e64;
+    --sh-sm: 0 2px 14px rgba(0, 0, 0, 0.28);
+    --sh-md: 0 6px 30px rgba(0, 0, 0, 0.38);
+    --nav-bg: rgba(16, 14, 11, 0.97);
+  }
+  .ci-sun {
+    display: none;
+  }
+  .ci-moon {
+    display: block;
+  }
+  [data-theme="dark"] .ci-sun {
+    display: block;
+  }
+  [data-theme="dark"] .ci-moon {
+    display: none;
+  }
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  .mc-root {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    transition:
+      background var(--dur),
+      color var(--dur);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* NAV */
+  .mc-nav {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 58px;
+    background: var(--nav-bg);
+    box-shadow: var(--nav-sh);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    transition: background var(--dur);
+  }
+  .mc-nav-l {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .mc-nav-r {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cs-logo {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+  }
+  .cs-logo-img {
+    height: 28px;
+    width: auto;
+    object-fit: contain;
+  }
+  .cs-logo-text {
+    display: none;
+    align-items: center;
+  }
+  .cs-logo-text.show {
+    display: flex;
+  }
+  .cs-logo-co {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--ink3);
+  }
+  .cs-logo-scribe {
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: var(--coral);
+    letter-spacing: -0.02em;
+  }
+  .cs-icon-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink3);
+    transition:
+      background var(--dur),
+      color var(--dur);
+  }
+  .cs-icon-btn:hover {
+    background: var(--bg2);
+    color: var(--ink);
+  }
+  .cs-av-chip {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--coral);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  /* BODY */
+  .mc-body {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 36px 28px 60px;
+  }
+
+  /* HEADER */
+  .mc-breadcrumb {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--ink3);
+    margin-bottom: 8px;
+  }
+  .mc-breadcrumb a {
+    color: var(--coral);
+    text-decoration: none;
+  }
+  .mc-header {
+    margin-bottom: 32px;
+  }
+  .mc-header h1 {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--ink);
+    letter-spacing: -0.04em;
+    margin-bottom: 6px;
+  }
+  .mc-header p {
+    font-size: 0.86rem;
+    color: var(--ink3);
+    font-weight: 500;
+  }
+
+  /* SECTION */
+  .mc-section-title {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    margin-bottom: 14px;
+    margin-top: 32px;
+  }
+
+  /* MY COURSES */
+  .mc-my-courses {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .mc-course-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--white);
+    border-radius: var(--r-xl);
+    padding: 16px 20px;
+    box-shadow: var(--sh-sm);
+    transition: box-shadow var(--dur);
+  }
+  .mc-course-row:hover {
+    box-shadow: var(--sh-md);
+  }
+  .mc-course-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--coral);
+    flex-shrink: 0;
+  }
+  .mc-course-info {
+    flex: 1;
+  }
+  .mc-course-code {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: var(--ink);
+  }
+  .mc-course-name {
+    font-size: 0.76rem;
+    color: var(--ink3);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+  .mc-remove-btn {
+    padding: 7px 16px;
+    background: transparent;
+    border: none;
+    border-radius: var(--pill);
+    font-family: var(--font);
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--ink3);
+    cursor: pointer;
+    transition: all var(--dur);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .mc-remove-btn:hover {
+    background: #ffeaea;
+    color: #e05a47;
+  }
+  .mc-no-courses {
+    font-size: 0.86rem;
+    color: var(--ink3);
+    font-weight: 500;
+    padding: 18px 20px;
+    background: var(--white);
+    border-radius: var(--r-xl);
+    box-shadow: var(--sh-sm);
+  }
+
+  /* CATALOG */
+  .mc-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--white);
+    border-radius: var(--pill);
+    padding: 10px 18px;
+    box-shadow: var(--sh-sm);
+    margin-bottom: 16px;
+  }
+  .mc-search-bar input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: var(--font);
+    font-size: 0.85rem;
+    color: var(--ink);
+    width: 100%;
+    font-weight: 500;
+  }
+  .mc-search-bar input::placeholder {
+    color: var(--ink3);
+  }
+
+  .mc-catalog {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 10px;
+  }
+  .mc-catalog-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--white);
+    border-radius: var(--r-xl);
+    padding: 14px 18px;
+    box-shadow: var(--sh-sm);
+    transition:
+      box-shadow var(--dur),
+      transform 0.14s;
+  }
+  .mc-catalog-card:hover {
+    box-shadow: var(--sh-md);
+    transform: translateY(-1px);
+  }
+  .mc-catalog-info {
+    flex: 1;
+  }
+  .mc-catalog-code {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: var(--ink);
+  }
+  .mc-catalog-name {
+    font-size: 0.74rem;
+    color: var(--ink3);
+    font-weight: 500;
+    margin-top: 2px;
+  }
+
+  /* Add / added button */
+  .mc-add-btn {
+    padding: 7px 16px;
+    background: var(--coral);
+    color: #fff;
+    border: none;
+    border-radius: var(--pill);
+    font-family: var(--font);
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+    box-shadow: 0 3px 10px rgba(255, 107, 91, 0.25);
+    transition: all var(--dur);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+  }
+  .mc-add-btn:hover {
+    background: var(--coral-dk);
+    transform: translateY(-1px);
+  }
+  .mc-add-btn.added {
+    background: var(--bg2);
+    color: var(--ink3);
+    box-shadow: none;
+    cursor: default;
+  }
+  .mc-add-btn.added:hover {
+    transform: none;
+    background: var(--bg2);
+  }
+
+  /* toast */
+  .mc-toast {
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 8px 20px;
+    border-radius: var(--pill);
+    font-size: 0.76rem;
+    font-weight: 700;
+    z-index: 9998;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    transition: opacity 0.2s;
+    pointer-events: none;
+    opacity: 0;
+    font-family: var(--font);
+  }
+
+  /* FLOAT NAV */
+  .float-nav {
+    position: fixed;
+    bottom: 22px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--ink);
+    border-radius: var(--pill);
+    padding: 8px 10px;
+    z-index: 9999;
+    box-shadow: 0 8px 36px rgba(0, 0, 0, 0.3);
+    transition:
+      opacity var(--dur),
+      transform var(--dur);
+    white-space: nowrap;
+    max-width: 95vw;
+    overflow-x: auto;
+  }
+  .float-nav.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%) translateY(12px);
+  }
+  .float-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.6);
+    background: transparent;
+    border: none;
+    border-radius: var(--pill);
+    padding: 6px 13px;
+    cursor: pointer;
+    transition: all 0.18s;
+    white-space: nowrap;
+    text-decoration: none;
+  }
+  .float-nav-item:hover,
+  .float-nav-item.active {
+    background: var(--coral);
+    color: #fff;
+  }
+  .float-nav-sep {
+    width: 1px;
+    height: 18px;
+    background: rgba(255, 255, 255, 0.14);
+    flex-shrink: 0;
+  }
+  .float-nav-private {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.7);
+    background: transparent;
+    border: none;
+    border-radius: var(--pill);
+    padding: 6px 13px;
+    cursor: pointer;
+    transition: all 0.18s;
+    text-decoration: none;
+  }
+  .float-nav-private:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+  }
+  .float-nav-dots {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    transition: background 0.18s;
+    flex-shrink: 0;
+  }
+  .float-nav-show {
+    position: fixed;
+    bottom: 22px;
+    right: 22px;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: rgba(255, 255, 255, 0.7);
+    border: none;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
+    z-index: 9999;
+  }
+  .float-nav-show:hover {
+    background: var(--coral);
+    color: #fff;
+  }
+  .float-nav-show.visible {
+    display: flex;
+  }
+
+  @media (max-width: 640px) {
+    .mc-nav {
+      padding: 0 14px;
+    }
+    .mc-body {
+      padding: 24px 14px 40px;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="mc-root" id="mcRoot">
+  <nav class="mc-nav">
+    <div class="mc-nav-l">
+      <a href="/app" class="cs-logo">
+        <img
+          class="cs-logo-img"
+          src="{{ url_for('static', path='img/logo.png') }}"
+          alt="CoScribe"
+          onerror="
+            this.style.display = 'none';
+            document.getElementById('mcLogoTxt').classList.add('show');
+          "
+        />
+        <span class="cs-logo-text" id="mcLogoTxt">
+          <span class="cs-logo-co">Co</span
+          ><span class="cs-logo-scribe">Scribe.</span>
+        </span>
+      </a>
+    </div>
+    <div class="mc-nav-r">
+      <button class="cs-icon-btn" id="themeBtn" title="Night mode">
+        <svg
+          class="ci-moon"
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+        <svg
+          class="ci-sun"
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+      </button>
+      <div class="cs-av-chip" title="{{ user.username }}">
+        {{ user.username[:1].upper() }}
+      </div>
+      <a href="/logout" class="cs-icon-btn" title="Logout">
+        <svg
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+      </a>
+    </div>
+  </nav>
+
+  <div class="mc-body">
+    <div class="mc-breadcrumb">
+      <a href="/app">Dashboard</a> / Manage Courses
+    </div>
+    <div class="mc-header">
+      <h1>Manage Courses</h1>
+      <p>
+        Add or remove courses from your dashboard. Your notes are grouped by
+        course.
+      </p>
+    </div>
+
+    <!-- Flash messages -->
+    {% for message in get_flashed_messages(request) %}
+    <div
+      style="padding:11px 15px;border-radius:14px;font-size:.82rem;font-weight:600;margin-bottom:14px;background:{% if message.type == 'danger' %}#fff0ee{% else %}#f0fdf4{% endif %};color:{% if message.type == 'danger' %}#c94433{% else %}#166534{% endif %}"
+    >
+      {{ message.message }}
+    </div>
+    {% endfor %}
+
+    <!-- MY COURSES (enrolled) -->
+    <div class="mc-section-title" style="margin-top: 0">My Courses</div>
+
+    {% if user_course_ids %}
+    <div class="mc-my-courses" id="myCoursesEl">
+      {% for course in courses %} {% if course.id in user_course_ids %}
+      <div class="mc-course-row" id="enrolled-{{ course.id }}">
+        <div class="mc-course-dot"></div>
+        <div class="mc-course-info">
+          <div class="mc-course-code">{{ course.code }}</div>
+          <div class="mc-course-name">{{ course.name }}</div>
+        </div>
+        <button
+          class="mc-remove-btn"
+          onclick="removeCourse({{ course.id }}, this)"
+          title="Remove"
+        >
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+          Remove
+        </button>
+      </div>
+      {% endif %} {% endfor %}
+    </div>
+    {% else %}
+    <div class="mc-no-courses" id="noCoursesMsg">
+      You haven't added any courses yet. Browse the catalog below to add some!
+    </div>
+    {% endif %}
+
+    <!-- COURSE CATALOG -->
+    <div class="mc-section-title">Course Catalog</div>
+
+    <div class="mc-search-bar">
+      <svg
+        width="14"
+        height="14"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.35-4.35" />
+      </svg>
+      <input type="text" id="catalogSearch" placeholder="Search courses…" />
+    </div>
+
+    <div class="mc-catalog" id="catalogEl">
+      {% for course in courses %}
+      <div
+        class="mc-catalog-card"
+        id="catalog-{{ course.id }}"
+        data-code="{{ course.code }}"
+        data-name="{{ course.name }}"
+      >
+        <div>
+          <div class="mc-catalog-code">{{ course.code }}</div>
+          <div class="mc-catalog-name">{{ course.name }}</div>
+        </div>
+        <button
+          class="mc-add-btn {% if course.id in user_course_ids %}added{% endif %}"
+          id="addBtn-{{ course.id }}"
+          onclick="toggleCourse({{ course.id }}, this)"
+        >
+          {% if course.id in user_course_ids %}
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          Added {% else %}
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+          >
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          Add {% endif %}
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Float nav -->
+<div class="float-nav" id="floatNav">
+  {% for course in courses %} {% if course.id in user_course_ids %}
+  <a href="/notes/new?course_id={{ course.id }}" class="float-nav-item"
+    >{{ course.code }}</a
+  >
+  {% endif %} {% endfor %}
+  <div class="float-nav-sep"></div>
+  <a href="/private-notes" class="float-nav-private">🔒 Private</a>
+  <div class="float-nav-sep"></div>
+  <button class="float-nav-dots" id="hideNavBtn">⋯</button>
+</div>
+<button class="float-nav-show" id="showNavBtn">⋯</button>
+
+<!-- Toast element -->
+<div class="mc-toast" id="toast"></div>
+
+<script>
+  /* Theme */
+  const root = document.getElementById("mcRoot");
+  if (localStorage.getItem("cs-theme") === "dark")
+    root.setAttribute("data-theme", "dark");
+  document.getElementById("themeBtn").addEventListener("click", () => {
+    const d = root.getAttribute("data-theme") === "dark";
+    d
+      ? root.removeAttribute("data-theme")
+      : root.setAttribute("data-theme", "dark");
+    localStorage.setItem("cs-theme", d ? "light" : "dark");
+  });
+
+  /* Float nav */
+  const floatNav = document.getElementById("floatNav"),
+    showNavBtn = document.getElementById("showNavBtn");
+  if (localStorage.getItem("cs-nav-hidden") === "1") {
+    floatNav.classList.add("hidden");
+    showNavBtn.classList.add("visible");
+  }
+  document.getElementById("hideNavBtn").addEventListener("click", () => {
+    floatNav.classList.add("hidden");
+    showNavBtn.classList.add("visible");
+    localStorage.setItem("cs-nav-hidden", "1");
+  });
+  showNavBtn.addEventListener("click", () => {
+    floatNav.classList.remove("hidden");
+    showNavBtn.classList.remove("visible");
+    localStorage.setItem("cs-nav-hidden", "0");
+  });
+
+  /* Catalog search */
+  document
+    .getElementById("catalogSearch")
+    .addEventListener("input", function () {
+      const q = this.value.toLowerCase();
+      document.querySelectorAll(".mc-catalog-card").forEach((card) => {
+        const match =
+          card.dataset.code.toLowerCase().includes(q) ||
+          card.dataset.name.toLowerCase().includes(q);
+        card.style.display = match ? "" : "none";
+      });
+    });
+
+  /* Toast */
+  function showToast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.style.opacity = "1";
+    clearTimeout(t._t);
+    t._t = setTimeout(() => (t.style.opacity = "0"), 2000);
+  }
+
+  /* Toggle course (add or remove from catalog) */
+  async function toggleCourse(courseId, btn) {
+    const isAdded = btn.classList.contains("added");
+    if (isAdded) {
+      await removeCourse(courseId, btn);
+    } else {
+      await addCourse(courseId, btn);
+    }
+  }
+
+  async function addCourse(courseId, btn) {
+    btn.disabled = true;
+    try {
+      const res = await fetch(`/api/user-courses/${courseId}`, {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error();
+
+      // Update add button
+      btn.classList.add("added");
+      btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Added`;
+
+      // Add to My Courses section
+      const noMsg = document.getElementById("noCoursesMsg");
+      if (noMsg) noMsg.remove();
+
+      // Get course info from catalog card
+      const card = document.getElementById(`catalog-${courseId}`);
+      const code = card.dataset.code;
+      const name = card.dataset.name;
+
+      // Create row in My Courses
+      let myCoursesEl = document.getElementById("myCoursesEl");
+      if (!myCoursesEl) {
+        myCoursesEl = document.createElement("div");
+        myCoursesEl.className = "mc-my-courses";
+        myCoursesEl.id = "myCoursesEl";
+        document.querySelector(".mc-section-title").after(myCoursesEl);
+      }
+
+      const row = document.createElement("div");
+      row.className = "mc-course-row";
+      row.id = `enrolled-${courseId}`;
+      row.innerHTML = `
+      <div class="mc-course-dot"></div>
+      <div class="mc-course-info">
+        <div class="mc-course-code">${code}</div>
+        <div class="mc-course-name">${name}</div>
+      </div>
+      <button class="mc-remove-btn" onclick="removeCourse(${courseId}, this)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        Remove
+      </button>
+    `;
+      myCoursesEl.appendChild(row);
+      showToast(`${code} added`);
+    } catch {
+      showToast("Failed to add course");
+    }
+    btn.disabled = false;
+  }
+
+  async function removeCourse(courseId, btn) {
+    btn.disabled = true;
+    try {
+      const res = await fetch(`/api/user-courses/${courseId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error();
+
+      // Remove from My Courses section
+      const row = document.getElementById(`enrolled-${courseId}`);
+      if (row) row.remove();
+
+      // Update catalog add button
+      const addBtn = document.getElementById(`addBtn-${courseId}`);
+      if (addBtn) {
+        addBtn.classList.remove("added");
+        addBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg> Add`;
+        addBtn.disabled = false;
+      }
+
+      // Show empty state if no more courses
+      const myCoursesEl = document.getElementById("myCoursesEl");
+      if (myCoursesEl && myCoursesEl.children.length === 0) {
+        myCoursesEl.remove();
+        const section = document.querySelector(".mc-section-title");
+        const noMsg = document.createElement("div");
+        noMsg.className = "mc-no-courses";
+        noMsg.id = "noCoursesMsg";
+        noMsg.textContent =
+          "You haven't added any courses yet. Browse the catalog below to add some!";
+        section.after(noMsg);
+      }
+
+      // Get code for toast
+      const card = document.getElementById(`catalog-${courseId}`);
+      const code = card ? card.dataset.code : "Course";
+      showToast(`${code} removed`);
+    } catch {
+      showToast("Failed to remove course");
+    }
+    btn.disabled = false;
+  }
+</script>
+{% endblock %} {% block subpage_scripts %}{% endblock %}
