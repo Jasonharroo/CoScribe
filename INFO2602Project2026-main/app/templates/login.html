@@ -1,76 +1,201 @@
-{% extends "base.html" %}
-{% block title %}CoScribe — Sign in{% endblock %}
-
-{% block internal_css %}
+{% extends "base.html" %} {% block title %}CoScribe — Sign in{% endblock %} {%
+block internal_css %}
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { min-height: 100vh; font-family: 'Montserrat', sans-serif; }
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    min-height: 100vh;
+    font-family: "Montserrat", sans-serif;
+  }
 
-/* Full-page background image */
-.auth-bg {
-  min-height: 100vh;
-  display: flex; align-items: center; justify-content: center;
-  padding: 24px 16px;
-  background: var(--cs-bg);
-}
+  /* Full-page background image */
+  .auth-bg {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+    background: var(--cs-bg);
+  }
 
-.auth-card {
-  position: relative; z-index: 1;
-  width: 100%; max-width: 420px;
-  background: var(--cs-white);
-  border-radius: 28px; padding: 40px 40px 36px;
-  box-shadow: 0 20px 80px rgba(0,0,0,.35);
-  animation: fadeUp .32s cubic-bezier(0.4,0,0.2,1);
-}
-@keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:none} }
+  .auth-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 420px;
+    background: var(--cs-white);
+    border-radius: 28px;
+    padding: 40px 40px 36px;
+    box-shadow: 0 20px 80px rgba(0, 0, 0, 0.35);
+    animation: fadeUp 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  @keyframes fadeUp {
+    from {
+      opacity: 0;
+      transform: translateY(18px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
 
-.auth-logo { display: flex; justify-content: center; margin-bottom: 28px; }
-.auth-logo-co     { font-size: 1.3rem; font-weight: 600; color: #9c9088; letter-spacing: -.01em; }
-.auth-logo-scribe { font-size: 1.3rem; font-weight: 900; color: #FF6B5B; letter-spacing: -.02em; }
+  .auth-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 28px;
+  }
+  .auth-logo-co {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #9c9088;
+    letter-spacing: -0.01em;
+  }
+  .auth-logo-scribe {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: #ff6b5b;
+    letter-spacing: -0.02em;
+  }
 
-.auth-title { font-size: 1.65rem; font-weight: 900; color: #17110d; text-align: center; margin-bottom: 6px; letter-spacing: -.03em; }
-.auth-sub { font-size: .84rem; color: #9c9088; text-align: center; margin-bottom: 28px; font-weight: 500; }
-.auth-sub a { color: #FF6B5B; text-decoration: none; font-weight: 700; }
+  .auth-title {
+    font-size: 1.65rem;
+    font-weight: 900;
+    color: #17110d;
+    text-align: center;
+    margin-bottom: 6px;
+    letter-spacing: -0.03em;
+  }
+  .auth-sub {
+    font-size: 0.84rem;
+    color: #9c9088;
+    text-align: center;
+    margin-bottom: 28px;
+    font-weight: 500;
+  }
+  .auth-sub a {
+    color: #ff6b5b;
+    text-decoration: none;
+    font-weight: 700;
+  }
 
-.auth-form { display: flex; flex-direction: column; gap: 14px; }
-.auth-field { display: flex; flex-direction: column; gap: 6px; }
-.auth-label { font-size: .72rem; font-weight: 700; color: #9c9088; letter-spacing: .06em; text-transform: uppercase; }
-.auth-input {
-  width: 100%; padding: 13px 16px;
-  background: #f6f4f0; border: none; border-radius: 14px;
-  font-size: .9rem; color: #17110d; outline: none;
-  font-family: 'Montserrat', sans-serif; font-weight: 500;
-  transition: background .2s, box-shadow .2s;
-}
-.auth-input:focus { background: #fff; box-shadow: 0 0 0 2px #FF6B5B, 0 0 0 5px rgba(255,107,91,.1); }
-.auth-input::placeholder { color: #c4b8ac; }
+  .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .auth-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .auth-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #9c9088;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .auth-input {
+    width: 100%;
+    padding: 13px 16px;
+    background: #f6f4f0;
+    border: none;
+    border-radius: 14px;
+    font-size: 0.9rem;
+    color: #17110d;
+    outline: none;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 500;
+    transition:
+      background 0.2s,
+      box-shadow 0.2s;
+  }
+  .auth-input:focus {
+    background: #fff;
+    box-shadow:
+      0 0 0 2px #ff6b5b,
+      0 0 0 5px rgba(255, 107, 91, 0.1);
+  }
+  .auth-input::placeholder {
+    color: #c4b8ac;
+  }
 
-.auth-submit {
-  width: 100%; padding: 14px; margin-top: 6px;
-  background: #FF6B5B; color: #fff; border: none; border-radius: 999px;
-  font-family: 'Montserrat', sans-serif; font-size: .9rem; font-weight: 800;
-  cursor: pointer; letter-spacing: .02em;
-  box-shadow: 0 4px 18px rgba(255,107,91,.35);
-  transition: background .2s, transform .14s, box-shadow .2s;
-}
-.auth-submit:hover { background: #e5503f; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(255,107,91,.45); }
-.auth-submit:active { transform: translateY(0); }
+  .auth-submit {
+    width: 100%;
+    padding: 14px;
+    margin-top: 6px;
+    background: #ff6b5b;
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    font-family: "Montserrat", sans-serif;
+    font-size: 0.9rem;
+    font-weight: 800;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    box-shadow: 0 4px 18px rgba(255, 107, 91, 0.35);
+    transition:
+      background 0.2s,
+      transform 0.14s,
+      box-shadow 0.2s;
+  }
+  .auth-submit:hover {
+    background: #e5503f;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(255, 107, 91, 0.45);
+  }
+  .auth-submit:active {
+    transform: translateY(0);
+  }
 
-.auth-back { text-align: center; margin-top: 20px; font-size: .78rem; color: #9c9088; font-weight: 500; }
-.auth-back a { color: #FF6B5B; text-decoration: none; font-weight: 700; }
+  .auth-back {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.78rem;
+    color: #9c9088;
+    font-weight: 500;
+  }
+  .auth-back a {
+    color: #ff6b5b;
+    text-decoration: none;
+    font-weight: 700;
+  }
 
-.cs-alert { padding: 11px 15px; border-radius: 12px; font-size: .82rem; font-weight: 600; margin-bottom: 6px; }
-.cs-alert-danger  { background: #fff0ee; color: #c94433; }
-.cs-alert-success { background: #f0fdf4; color: #166534; }
+  .cs-alert {
+    padding: 11px 15px;
+    border-radius: 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .cs-alert-danger {
+    background: #fff0ee;
+    color: #c94433;
+  }
+  .cs-alert-success {
+    background: #f0fdf4;
+    color: #166534;
+  }
 </style>
-{% endblock %}
-
-{% block content %}
+{% endblock %} {% block content %}
 <div class="auth-bg">
   <div class="auth-card">
     <div class="auth-logo">
-      <a href="/" style="text-decoration:none;display:flex;align-items:center;">
-        <img src="{{ url_for('static', path='img/logo.png') }}" alt="CoScribe logo" style="height:30px;width:auto;"/>
+      <a
+        href="/"
+        style="text-decoration: none; display: flex; align-items: center"
+      >
+        <img
+          src="{{ url_for('static', path='img/logo.png') }}"
+          alt="CoScribe logo"
+          style="height: 30px; width: auto"
+        />
       </a>
     </div>
 
@@ -78,17 +203,33 @@ body { min-height: 100vh; font-family: 'Montserrat', sans-serif; }
     <p class="auth-sub">No account? <a href="/register">Sign up free →</a></p>
 
     {% for message in get_flashed_messages(request) %}
-      <div class="cs-alert cs-alert-{{ message.type }}">{{ message.message }}</div>
+    <div class="cs-alert cs-alert-{{ message.type }}">
+      {{ message.message }}
+    </div>
     {% endfor %}
 
     <form class="auth-form" method="POST" action="/login">
       <div class="auth-field">
         <label class="auth-label">Username</label>
-        <input class="auth-input" type="text" name="username" placeholder="Your username" required autocomplete="username"/>
+        <input
+          class="auth-input"
+          type="text"
+          name="username"
+          placeholder="Your username"
+          required
+          autocomplete="username"
+        />
       </div>
       <div class="auth-field">
         <label class="auth-label">Password</label>
-        <input class="auth-input" type="password" name="password" placeholder="Your password" required autocomplete="current-password"/>
+        <input
+          class="auth-input"
+          type="password"
+          name="password"
+          placeholder="Your password"
+          required
+          autocomplete="current-password"
+        />
       </div>
       <button type="submit" class="auth-submit">Sign in</button>
     </form>

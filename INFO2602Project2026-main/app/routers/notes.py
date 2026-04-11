@@ -30,16 +30,24 @@ def get_voice_note_service(db: Session = Depends(get_session)):
     return VoiceNoteService(repo)
 
 
-
 @router.get("", response_class=HTMLResponse)
 def all_notes_view(
     request: Request,
     user: AuthDep,
     db: Session = Depends(get_session),
 ):
-    course_repo = CourseRepository(db)
-    course_service = CourseService(course_repo)
-    courses = course_service.get_all_courses()
+    uc_repo = UserCourseRepository(db)
+    uc_service = UserCourseService(uc_repo)
+
+    user_course_links = uc_service.get_user_courses(user.id)
+    course_ids = [uc.course_id for uc in user_course_links]
+
+    if course_ids:
+        courses = db.exec(
+            select(Course).where(Course.id.in_(course_ids))
+        ).all()
+    else:
+        courses = []
 
     return templates.TemplateResponse(
         request=request,
@@ -50,30 +58,32 @@ def all_notes_view(
         }
     )
 
-@router.get("/new", response_class=HTMLResponse)
-def new_note_view(
+
+@router.get("", response_class=HTMLResponse)
+def all_notes_view(
     request: Request,
     user: AuthDep,
     db: Session = Depends(get_session),
-    course_id: int | None = None,
 ):
-    course_repo = CourseRepository(db)
-    course_service = CourseService(course_repo)
-    courses = course_service.get_all_courses()
+    uc_repo = UserCourseRepository(db)
+    uc_service = UserCourseService(uc_repo)
 
-    selected_course_id = course_id or (courses[0].id if courses else 1)
-    
+    user_course_links = uc_service.get_user_courses(user.id)
+    course_ids = [uc.course_id for uc in user_course_links]
+
+    if course_ids:
+        courses = db.exec(
+            select(Course).where(Course.id.in_(course_ids))
+        ).all()
+    else:
+        courses = []
+
     return templates.TemplateResponse(
         request=request,
-        name="notes.html",
+        name="all_notes.html",
         context={
             "user": user,
-            "note": None,
-            "is_new": True,
             "courses": courses,
-            "selected_course_id": selected_course_id,
-            "course_notes": [],
-            "voice_notes": [],
         }
     )
 
@@ -120,10 +130,19 @@ def note_view(
 def create_note(
     note: NoteCreate,
     user: AuthDep,
-    service: NoteService = Depends(get_note_service)
+    service: NoteService = Depends(get_note_service),
+    db: Session = Depends(get_session),
 ):
-    return service.create_note(note, user.id)
+    uc_repo = UserCourseRepository(db)
+    uc_service = UserCourseService(uc_repo)
 
+    user_course_links = uc_service.get_user_courses(user.id)
+    allowed_course_ids = {uc.course_id for uc in user_course_links}
+
+    if note.course_id not in allowed_course_ids:
+        raise HTTPException(status_code=403, detail="Not authorized for this course")
+
+    return service.create_note(note, user.id)
 
 @api_router.get("/")
 def get_notes(
