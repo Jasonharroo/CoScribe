@@ -92,6 +92,29 @@ def new_note_view(
         }
     )
 
+@router.get("/new", response_class=HTMLResponse)
+def new_note_view(
+    request: Request,
+    user: AuthDep,
+    db: Session = Depends(get_session),
+):
+    course_repo = CourseRepository(db)
+    course_service = CourseService(course_repo)
+    courses = course_service.get_all_courses()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="notes.html",  
+        context={
+            "user": user,
+            "note": None,
+            "is_new": True,
+            "courses": courses,
+            "selected_course_id": None,
+            "course_notes": [],
+            "voice_notes": [],
+        }
+    )
 
 @router.get("/{note_id}", response_class=HTMLResponse)
 def note_view(
