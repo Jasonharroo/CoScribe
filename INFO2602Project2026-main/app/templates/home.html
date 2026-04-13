@@ -342,6 +342,17 @@ block external_css %}
     color: var(--cs-ink-3);
   }
 
+  .notif-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: red;
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 50%;
+  }
+
   @media (max-width: 640px) {
     .home-nav {
       padding: 0 14px;
@@ -438,12 +449,35 @@ block external_css %}
       New Note
     </button>
 
+    <a
+      href="/students"
+      class="cs-btn-outline"
+      style="
+        padding: 7px 14px;
+        font-size: 0.82rem;
+        border-radius: 8px;
+        text-decoration: none;
+      "
+    >
+      Explore
+    </a>
+
     <div
       class="cs-av"
-      style="background: var(--cs-red); cursor: pointer"
+      style="
+        position: relative;
+        background: var(--cs-red);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      "
       title="{{ user.username }}"
     >
-      {{ user.username[:1].upper() }}
+      {{ user.username[:1].upper() }} {% if pending_collab_count > 0 %}
+      <span class="notif-badge">{{ pending_collab_count }}</span>
+      {% endif %}
     </div>
 
     <a href="/logout" class="cs-icon-btn" title="Logout">

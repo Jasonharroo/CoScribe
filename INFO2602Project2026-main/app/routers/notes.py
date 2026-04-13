@@ -5,29 +5,44 @@ from pathlib import Path
 
 from app.database import get_session
 from app.repositories.note import NoteRepository
-from app.repositories.course import CourseRepository
 from app.repositories.voiceNote import VoiceNoteRepository
 from app.repositories.user_course import UserCourseRepository
 from app.services.voice_note_service import VoiceNoteService
 from app.services.note_service import NoteService
-from app.services.course_service import CourseService
 from app.services.user_course_service import UserCourseService
 from app.schemas.note import NoteCreate, NoteUpdate
 from app.dependencies.auth import AuthDep
-
 from app.models.course import Course
+
 from . import templates
 
 router = APIRouter(prefix="/notes", tags=["Notes"])
 api_router = APIRouter(prefix="/notes", tags=["Notes API"])
 
+
 def get_note_service(db: Session = Depends(get_session)):
     repo = NoteRepository(db)
     return NoteService(repo)
 
+
 def get_voice_note_service(db: Session = Depends(get_session)):
     repo = VoiceNoteRepository(db)
     return VoiceNoteService(repo)
+
+
+def get_user_registered_courses(db: Session, user_id: int):
+    uc_repo = UserCourseRepository(db)
+    uc_service = UserCourseService(uc_repo)
+
+    user_course_links = uc_service.get_user_courses(user_id)
+    course_ids = [uc.course_id for uc in user_course_links]
+
+    if not course_ids:
+        return []
+
+    return db.exec(
+        select(Course).where(Course.id.in_(course_ids))
+    ).all()
 
 
 @router.get("", response_class=HTMLResponse)
@@ -36,18 +51,7 @@ def all_notes_view(
     user: AuthDep,
     db: Session = Depends(get_session),
 ):
-    uc_repo = UserCourseRepository(db)
-    uc_service = UserCourseService(uc_repo)
-
-    user_course_links = uc_service.get_user_courses(user.id)
-    course_ids = [uc.course_id for uc in user_course_links]
-
-    if course_ids:
-        courses = db.exec(
-            select(Course).where(Course.id.in_(course_ids))
-        ).all()
-    else:
-        courses = []
+    courses = get_user_registered_courses(db, user.id)
 
     return templates.TemplateResponse(
         request=request,
@@ -59,31 +63,32 @@ def all_notes_view(
     )
 
 
-@router.get("", response_class=HTMLResponse)
-def all_notes_view(
+@router.get("/new", response_class=HTMLResponse)
+def new_note_view(
     request: Request,
     user: AuthDep,
     db: Session = Depends(get_session),
+    course_id: int | None = None,
 ):
-    uc_repo = UserCourseRepository(db)
-    uc_service = UserCourseService(uc_repo)
+    courses = get_user_registered_courses(db, user.id)
 
-    user_course_links = uc_service.get_user_courses(user.id)
-    course_ids = [uc.course_id for uc in user_course_links]
+    if not courses:
+        return RedirectResponse(url="/courses/", status_code=303)
 
-    if course_ids:
-        courses = db.exec(
-            select(Course).where(Course.id.in_(course_ids))
-        ).all()
-    else:
-        courses = []
+    valid_course_ids = {course.id for course in courses}
+    selected_course_id = course_id if course_id in valid_course_ids else courses[0].id
 
     return templates.TemplateResponse(
         request=request,
-        name="all_notes.html",
+        name="notes.html",
         context={
             "user": user,
+            "note": None,
+            "is_new": True,
             "courses": courses,
+            "selected_course_id": selected_course_id,
+            "course_notes": [],
+            "voice_notes": [],
         }
     )
 
@@ -104,10 +109,8 @@ def note_view(
 
     if note.owner_id != user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
-    
-    course_repo = CourseRepository(db)
-    course_service = CourseService(course_repo)
-    courses = course_service.get_all_courses()
+
+    courses = get_user_registered_courses(db, user.id)
     course_notes = service.get_notes_by_owner_and_course(user.id, note.course_id)
     voice_notes = voice_note_service.get_voice_notes_for_note(note.id)
 
@@ -144,6 +147,7 @@ def create_note(
 
     return service.create_note(note, user.id)
 
+
 @api_router.get("/")
 def get_notes(
     user: AuthDep,
@@ -165,6 +169,12 @@ def get_note_api(
         raise HTTPException(status_code=403, detail="Not authorized")
     return note
 
+@api_router.get("/user/{user_id}/public")
+def get_public_notes_by_user(
+    user_id: int,
+    service: NoteService = Depends(get_note_service),
+):
+    return service.get_public_notes_by_user(user_id)
 
 @api_router.put("/{note_id}")
 def update_note(

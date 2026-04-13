@@ -20,12 +20,14 @@ api_router = APIRouter(tags=["API Endpoints"], prefix="/api")
 
 from . import (
     index, login, register, admin_home, user_home, users,
-    logout, notes, courses, voice_notes
+    logout, notes, courses, voice_notes, students
 )
 
 router.include_router(notes.router)
 router.include_router(courses.router)
+router.include_router(students.router)
 
 api_router.include_router(notes.api_router)
 api_router.include_router(courses.api_router)
 api_router.include_router(voice_notes.router)
+api_router.include_router(students.api_router)

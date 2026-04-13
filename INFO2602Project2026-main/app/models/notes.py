@@ -7,3 +7,4 @@ class Note(SQLModel, table=True):
     content: str
     course_id: int = Field(foreign_key="course.id")
     owner_id: int = Field(foreign_key="user.id")
+    is_public: bool = Field(default=False)

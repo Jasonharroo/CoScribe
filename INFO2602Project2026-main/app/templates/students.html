@@ -1,0 +1,670 @@
+{% extends "base.html" %} {% block title %}CoScribe — Students{% endblock %} {%
+block external_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=DM+Mono:wght@400;500&display=swap"
+  rel="stylesheet"
+/>
+{% endblock %} {% block additional_styles %}
+<style>
+  #sidebar,
+  .navbar {
+    display: none !important;
+  }
+  #content {
+    padding: 0 !important;
+    background: #f6f4f0 !important;
+  }
+  body {
+    overflow-x: hidden;
+    font-family: "Montserrat", sans-serif;
+  }
+</style>
+{% endblock %} {% block internal_css %}
+<style>
+  :root {
+    --bg: #f6f4f0;
+    --bg2: #edeae3;
+    --white: #ffffff;
+    --coral: #ff6b5b;
+    --coral-dk: #e5503f;
+    --coral-lt: #fff0ee;
+    --ink: #17110d;
+    --ink2: #4a3f35;
+    --ink3: #9c9088;
+    --sh-sm: 0 2px 14px rgba(0, 0, 0, 0.07);
+    --sh-md: 0 6px 30px rgba(0, 0, 0, 0.11);
+    --sh-lg: 0 14px 50px rgba(0, 0, 0, 0.14);
+    --nav-bg: rgba(246, 244, 240, 0.93);
+    --nav-sh: 0 1px 0 rgba(0, 0, 0, 0.05), 0 4px 18px rgba(0, 0, 0, 0.06);
+    --pill: 999px;
+    --r-lg: 22px;
+    --r-xl: 28px;
+    --dur: 0.2s;
+    --font: "Montserrat", sans-serif;
+    --mono: "DM Mono", monospace;
+  }
+
+  [data-theme="dark"] {
+    --bg: #100e0b;
+    --bg2: #1a1814;
+    --white: #1e1c17;
+    --coral-lt: #241310;
+    --ink: #f0ebe3;
+    --ink2: #c4b8ac;
+    --ink3: #786e64;
+    --sh-sm: 0 2px 14px rgba(0, 0, 0, 0.28);
+    --sh-md: 0 6px 30px rgba(0, 0, 0, 0.38);
+    --nav-bg: rgba(16, 14, 11, 0.97);
+  }
+
+  .ci-sun {
+    display: none;
+  }
+  .ci-moon {
+    display: block;
+  }
+  [data-theme="dark"] .ci-sun {
+    display: block;
+  }
+  [data-theme="dark"] .ci-moon {
+    display: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  .sd-root {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    transition:
+      background var(--dur),
+      color var(--dur);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .sd-nav {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 58px;
+    background: var(--nav-bg);
+    box-shadow: var(--nav-sh);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    transition: background var(--dur);
+  }
+  .sd-nav-l {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sd-nav-r {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .cs-logo {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+  }
+  .cs-logo-img {
+    height: 28px;
+    width: auto;
+    object-fit: contain;
+  }
+  .cs-logo-text {
+    display: none;
+    align-items: center;
+  }
+  .cs-logo-text.show {
+    display: flex;
+  }
+  .cs-logo-co {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--ink3);
+  }
+  .cs-logo-scribe {
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: var(--coral);
+    letter-spacing: -0.02em;
+  }
+
+  .cs-icon-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink3);
+    transition:
+      background var(--dur),
+      color var(--dur);
+  }
+  .cs-icon-btn:hover {
+    background: var(--bg2);
+    color: var(--ink);
+  }
+
+  .cs-av-chip {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--coral);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  .sd-nav-tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .sd-nav-tab {
+    padding: 6px 16px;
+    border: none;
+    background: transparent;
+    border-radius: var(--pill);
+    font-family: var(--font);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--ink3);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all var(--dur);
+  }
+  .sd-nav-tab:hover {
+    background: var(--bg2);
+    color: var(--ink);
+  }
+  .sd-nav-tab.active {
+    background: var(--coral-lt);
+    color: var(--coral);
+  }
+
+  .sd-body {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 36px 24px 60px;
+  }
+
+  .sd-header {
+    margin-bottom: 28px;
+  }
+  .sd-breadcrumb {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--ink3);
+    margin-bottom: 8px;
+  }
+  .sd-breadcrumb a {
+    color: var(--coral);
+    text-decoration: none;
+  }
+  .sd-header h1 {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--ink);
+    letter-spacing: -0.04em;
+    margin-bottom: 5px;
+  }
+  .sd-header p {
+    font-size: 0.86rem;
+    color: var(--ink3);
+    font-weight: 500;
+  }
+
+  .sd-search-wrap {
+    position: relative;
+    margin-bottom: 28px;
+  }
+  .sd-search {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--white);
+    border-radius: var(--pill);
+    padding: 12px 20px;
+    box-shadow: var(--sh-sm);
+    transition: box-shadow var(--dur);
+  }
+  .sd-search:focus-within {
+    box-shadow: var(--sh-md);
+  }
+  .sd-search input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: var(--font);
+    font-size: 0.9rem;
+    color: var(--ink);
+    width: 100%;
+    font-weight: 500;
+  }
+  .sd-search input::placeholder {
+    color: var(--ink3);
+  }
+  .sd-search-count {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--ink3);
+    white-space: nowrap;
+    font-family: var(--mono);
+  }
+
+  .sd-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+  }
+
+  .sd-card {
+    background: var(--white);
+    border-radius: var(--r-xl);
+    padding: 24px 20px;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    box-shadow: var(--sh-sm);
+    transition:
+      box-shadow var(--dur),
+      transform 0.14s;
+    cursor: pointer;
+    text-align: center;
+  }
+  .sd-card:hover {
+    box-shadow: var(--sh-md);
+    transform: translateY(-3px);
+  }
+  .sd-card:hover .sd-card-avatar {
+    transform: scale(1.06);
+  }
+
+  .sd-card-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: #fff;
+    transition: transform 0.18s;
+    flex-shrink: 0;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+  }
+  .sd-card-name {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .sd-card-email {
+    font-size: 0.72rem;
+    color: var(--ink3);
+    font-weight: 500;
+    word-break: break-all;
+  }
+  .sd-card-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: var(--pill);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    background: var(--coral-lt);
+    color: var(--coral);
+  }
+
+  .sd-card-you {
+    background: var(--bg2);
+    color: var(--ink3);
+    padding: 4px 12px;
+    border-radius: var(--pill);
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+
+  .sd-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 60px;
+    color: var(--ink3);
+    font-weight: 600;
+    font-size: 0.88rem;
+  }
+  .sd-empty {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--ink3);
+  }
+  .sd-empty-icon {
+    font-size: 3.5rem;
+    margin-bottom: 14px;
+    opacity: 0.35;
+  }
+  .sd-empty p {
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .sd-nav {
+      padding: 0 14px;
+    }
+    .sd-body {
+      padding: 24px 14px 40px;
+    }
+    .sd-grid {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+    .sd-header h1 {
+      font-size: 1.5rem;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="sd-root" id="sdRoot">
+  <nav class="sd-nav">
+    <div class="sd-nav-l">
+      <a href="/app" class="cs-logo">
+        <img
+          class="cs-logo-img"
+          src="{{ url_for('static', path='img/logo.png') }}"
+          alt="CoScribe"
+          onerror="
+            this.style.display = 'none';
+            document.getElementById('sdLogoTxt').classList.add('show');
+          "
+        />
+        <span class="cs-logo-text" id="sdLogoTxt">
+          <span class="cs-logo-co">Co</span
+          ><span class="cs-logo-scribe">Scribe.</span>
+        </span>
+      </a>
+
+      <div class="sd-nav-tabs">
+        <a href="/app" class="sd-nav-tab">Home</a>
+        <a href="/notes" class="sd-nav-tab">Notes</a>
+        <a href="/students" class="sd-nav-tab active">Students</a>
+        <a href="/courses/" class="sd-nav-tab">Courses</a>
+      </div>
+    </div>
+
+    <div class="sd-nav-r">
+      <button class="cs-icon-btn" id="themeBtn" title="Night mode">
+        <svg
+          class="ci-moon"
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+        <svg
+          class="ci-sun"
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+      </button>
+
+      <div class="cs-av-chip" title="{{ user.username }}">
+        {{ user.username[:1].upper() }}
+      </div>
+
+      <a href="/logout" class="cs-icon-btn" title="Logout">
+        <svg
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+      </a>
+    </div>
+  </nav>
+
+  <div class="sd-body">
+    <div class="sd-header">
+      <div class="sd-breadcrumb"><a href="/app">Home</a> / Students</div>
+      <h1>Students</h1>
+      <p>Find classmates, see their notes and request to collaborate.</p>
+    </div>
+
+    <div class="sd-search-wrap">
+      <div class="sd-search">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          style="color: var(--ink3); flex-shrink: 0"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.35-4.35" />
+        </svg>
+
+        <input
+          type="text"
+          id="studentSearch"
+          placeholder="Search by name or email…"
+          autocomplete="off"
+        />
+
+        <span class="sd-search-count" id="searchCount"></span>
+      </div>
+    </div>
+
+    <div class="sd-loading" id="loadingState">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        style="animation: spin 1s linear infinite"
+      >
+        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+      </svg>
+      Loading students…
+    </div>
+
+    <div class="sd-grid" id="studentGrid" style="display: none"></div>
+
+    <div class="sd-empty" id="emptyState" style="display: none">
+      <div class="sd-empty-icon">🔍</div>
+      <p>No students found matching your search.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const root = document.getElementById("sdRoot");
+  if (localStorage.getItem("cs-theme") === "dark") {
+    root.setAttribute("data-theme", "dark");
+  }
+
+  document.getElementById("themeBtn").addEventListener("click", () => {
+    const d = root.getAttribute("data-theme") === "dark";
+    if (d) {
+      root.removeAttribute("data-theme");
+    } else {
+      root.setAttribute("data-theme", "dark");
+    }
+    localStorage.setItem("cs-theme", d ? "light" : "dark");
+  });
+
+  const COLOURS = [
+    "#FF6B5B",
+    "#5b7fa6",
+    "#8e44ad",
+    "#27ae60",
+    "#e67e22",
+    "#2980b9",
+    "#c0392b",
+    "#16a085",
+    "#d35400",
+    "#8e44ad",
+  ];
+
+  function avatarColor(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) {
+      h = str.charCodeAt(i) + ((h << 5) - h);
+    }
+    return COLOURS[Math.abs(h) % COLOURS.length];
+  }
+
+  function escHtml(s) {
+    const d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  const ME = "{{ user.id }}";
+  let allStudents = [];
+
+  async function loadStudents() {
+    try {
+      const res = await fetch("/api/users");
+      if (!res.ok) throw new Error();
+      allStudents = await res.json();
+      renderStudents(allStudents);
+      document.getElementById("loadingState").style.display = "none";
+      document.getElementById("studentGrid").style.display = "";
+    } catch (e) {
+      document.getElementById("loadingState").textContent =
+        "Failed to load students. Please refresh.";
+    }
+  }
+
+  function renderStudents(students) {
+    const grid = document.getElementById("studentGrid");
+    const empty = document.getElementById("emptyState");
+    const countEl = document.getElementById("searchCount");
+
+    if (students.length === 0) {
+      grid.style.display = "none";
+      empty.style.display = "";
+      countEl.textContent = "";
+      return;
+    }
+
+    grid.style.display = "";
+    empty.style.display = "none";
+    countEl.textContent = `${students.length} student${students.length !== 1 ? "s" : ""}`;
+    grid.innerHTML = "";
+
+    students.forEach((student) => {
+      const isMe = String(student.id) === ME;
+      const initials = student.username.slice(0, 2).toUpperCase();
+      const color = avatarColor(student.username);
+
+      const card = document.createElement("a");
+      card.className = "sd-card";
+      card.href = isMe ? "/app" : `/students/${student.id}`;
+
+      card.innerHTML = `
+        <div class="sd-card-avatar" style="background:${color}">${initials}</div>
+        <div class="sd-card-name">${escHtml(student.username)}</div>
+        <div class="sd-card-email">${escHtml(student.email)}</div>
+        ${
+          isMe
+            ? `<div class="sd-card-you">You</div>`
+            : `<div class="sd-card-badge">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                View profile
+              </div>`
+        }
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  document
+    .getElementById("studentSearch")
+    .addEventListener("input", function () {
+      const q = this.value.toLowerCase().trim();
+      if (!q) {
+        renderStudents(allStudents);
+        return;
+      }
+
+      const filtered = allStudents.filter(
+        (s) =>
+          s.username.toLowerCase().includes(q) ||
+          s.email.toLowerCase().includes(q),
+      );
+
+      renderStudents(filtered);
+    });
+
+  loadStudents();
+</script>
+{% endblock %} {% block subpage_scripts %}{% endblock %}

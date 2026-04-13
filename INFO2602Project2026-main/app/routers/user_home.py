@@ -6,6 +6,8 @@ from app.repositories.note import NoteRepository
 from app.services.note_service import NoteService
 from app.repositories.user_course import UserCourseRepository
 from app.services.user_course_service import UserCourseService
+from app.repositories.collab import CollaborationRepository
+from app.services.collab_service import CollaborationService
 from app.models.course import Course
 from app.models.voiceNote import VoiceNote
 from app.models.collab import Collaboration
@@ -19,9 +21,17 @@ async def user_home_view(
     user: AuthDep,
     db: SessionDep
 ):
+    collab_repo = CollaborationRepository(db)
+    collab_service = CollaborationService(collab_repo)
+
     note_repo = NoteRepository(db)
     note_service = NoteService(note_repo)
     notes = note_service.get_notes_by_owner(user.id)
+    note_ids = [n.id for n in notes]
+
+    pending_requests = collab_service.get_pending_for_note_owner(note_ids)
+
+    pending_count = len(pending_requests)
 
     uc_repo = UserCourseRepository(db)
     uc_service = UserCourseService(uc_repo)
@@ -55,5 +65,6 @@ async def user_home_view(
             "course_count": len(courses),
             "voice_note_count": voice_note_count,
             "collaborator_count": collaborator_count,
+            "pending_collab_count": pending_count,
         }
     )

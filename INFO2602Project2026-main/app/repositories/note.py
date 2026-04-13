@@ -73,3 +73,10 @@ class NoteRepository:
             .where(Note.owner_id == owner_id, Note.course_id == course_id)
             .order_by(Note.id.desc())
         ).all()
+    
+    def get_public_notes_by_user(self, user_id: int) -> List[Note]:
+        return self.db.exec(
+            select(Note)
+            .where(Note.owner_id == user_id, Note.is_public == True)
+            .order_by(Note.id.desc())
+        ).all()

@@ -1,0 +1,946 @@
+{% extends "base.html" %} {% block title %}CoScribe — Student Profile{% endblock
+%} {% block external_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=DM+Mono:wght@400;500&display=swap"
+  rel="stylesheet"
+/>
+{% endblock %} {% block additional_styles %}
+<style>
+  #sidebar,
+  .navbar {
+    display: none !important;
+  }
+  #content {
+    padding: 0 !important;
+    background: #f6f4f0 !important;
+  }
+  body {
+    overflow-x: hidden;
+    font-family: "Montserrat", sans-serif;
+  }
+</style>
+{% endblock %} {% block internal_css %}
+<style>
+  :root {
+    --bg: #f6f4f0;
+    --bg2: #edeae3;
+    --white: #ffffff;
+    --coral: #ff6b5b;
+    --coral-dk: #e5503f;
+    --coral-lt: #fff0ee;
+    --ink: #17110d;
+    --ink2: #4a3f35;
+    --ink3: #9c9088;
+    --sh-sm: 0 2px 14px rgba(0, 0, 0, 0.07);
+    --sh-md: 0 6px 30px rgba(0, 0, 0, 0.11);
+    --sh-lg: 0 14px 50px rgba(0, 0, 0, 0.14);
+    --nav-bg: rgba(246, 244, 240, 0.93);
+    --nav-sh: 0 1px 0 rgba(0, 0, 0, 0.05), 0 4px 18px rgba(0, 0, 0, 0.06);
+    --pill: 999px;
+    --r-lg: 22px;
+    --r-xl: 28px;
+    --dur: 0.2s;
+    --font: "Montserrat", sans-serif;
+    --mono: "DM Mono", monospace;
+  }
+
+  [data-theme="dark"] {
+    --bg: #100e0b;
+    --bg2: #1a1814;
+    --white: #1e1c17;
+    --coral-lt: #241310;
+    --ink: #f0ebe3;
+    --ink2: #c4b8ac;
+    --ink3: #786e64;
+    --sh-sm: 0 2px 14px rgba(0, 0, 0, 0.28);
+    --sh-md: 0 6px 30px rgba(0, 0, 0, 0.38);
+    --sh-lg: 0 14px 50px rgba(0, 0, 0, 0.48);
+    --nav-bg: rgba(16, 14, 11, 0.97);
+  }
+
+  .ci-sun {
+    display: none;
+  }
+  .ci-moon {
+    display: block;
+  }
+  [data-theme="dark"] .ci-sun {
+    display: block;
+  }
+  [data-theme="dark"] .ci-moon {
+    display: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  .sp-root {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    transition:
+      background var(--dur),
+      color var(--dur);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .sp-nav {
+    position: sticky;
+    top: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 58px;
+    background: var(--nav-bg);
+    box-shadow: var(--nav-sh);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    transition: background var(--dur);
+  }
+  .sp-nav-l {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sp-nav-r {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .cs-logo {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+  }
+  .cs-logo-img {
+    height: 28px;
+    width: auto;
+    object-fit: contain;
+  }
+  .cs-logo-text {
+    display: none;
+    align-items: center;
+  }
+  .cs-logo-text.show {
+    display: flex;
+  }
+  .cs-logo-co {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--ink3);
+  }
+  .cs-logo-scribe {
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: var(--coral);
+    letter-spacing: -0.02em;
+  }
+  .cs-icon-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink3);
+    transition:
+      background var(--dur),
+      color var(--dur);
+  }
+  .cs-icon-btn:hover {
+    background: var(--bg2);
+    color: var(--ink);
+  }
+  .cs-av-chip {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--coral);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  .sp-body {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 36px 24px 60px;
+  }
+
+  .sp-breadcrumb {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--ink3);
+    margin-bottom: 24px;
+  }
+  .sp-breadcrumb a {
+    color: var(--coral);
+    text-decoration: none;
+  }
+  .sp-breadcrumb a:hover {
+    text-decoration: underline;
+  }
+  .sp-breadcrumb span {
+    margin: 0 6px;
+    opacity: 0.4;
+  }
+
+  .sp-profile {
+    display: flex;
+    align-items: flex-start;
+    gap: 28px;
+    background: var(--white);
+    border-radius: var(--r-xl);
+    padding: 28px 30px;
+    box-shadow: var(--sh-sm);
+    margin-bottom: 28px;
+  }
+  .sp-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+  .sp-avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: #fff;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+  }
+  .sp-online-dot {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #3ecf8e;
+    border: 2px solid var(--white);
+  }
+
+  .sp-profile-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .sp-username {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--ink);
+    letter-spacing: -0.03em;
+    margin-bottom: 4px;
+  }
+  .sp-email {
+    font-size: 0.82rem;
+    color: var(--ink3);
+    font-weight: 500;
+    margin-bottom: 14px;
+  }
+
+  .sp-stats {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 18px;
+  }
+  .sp-stat {
+    text-align: center;
+  }
+  .sp-stat-val {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: var(--ink);
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+  .sp-stat-lbl {
+    font-size: 0.68rem;
+    color: var(--ink3);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 2px;
+  }
+
+  .sp-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .sp-btn-collab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 22px;
+    background: var(--coral);
+    color: #fff;
+    border: none;
+    border-radius: var(--pill);
+    cursor: pointer;
+    font-family: var(--font);
+    font-size: 0.82rem;
+    font-weight: 700;
+    box-shadow: 0 4px 14px rgba(255, 107, 91, 0.26);
+    transition: all var(--dur);
+  }
+  .sp-btn-collab:hover {
+    background: var(--coral-dk);
+    transform: translateY(-1px);
+  }
+  .sp-btn-collab:disabled {
+    background: var(--bg2);
+    color: var(--ink3);
+    box-shadow: none;
+    transform: none;
+    cursor: default;
+  }
+  .sp-btn-collab.requested {
+    background: var(--bg2);
+    color: var(--ink3);
+    box-shadow: none;
+  }
+
+  .sp-courses-wrap {
+    margin-bottom: 20px;
+  }
+  .sp-courses-label {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink3);
+    margin-bottom: 12px;
+  }
+  .sp-course-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .sp-course-tab {
+    padding: 7px 16px;
+    background: var(--white);
+    border: none;
+    border-radius: var(--pill);
+    font-family: var(--font);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--ink3);
+    cursor: pointer;
+    box-shadow: var(--sh-sm);
+    transition: all var(--dur);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sp-course-tab:hover {
+    box-shadow: var(--sh-md);
+    transform: translateY(-1px);
+  }
+  .sp-course-tab.active {
+    background: var(--coral);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(255, 107, 91, 0.26);
+  }
+  .sp-course-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.7;
+  }
+
+  .sp-notes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .sp-notes-title {
+    font-size: 1.05rem;
+    font-weight: 900;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+  .sp-notes-count {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--ink3);
+    font-family: var(--mono);
+  }
+
+  .sp-notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+  }
+
+  .sp-note-card {
+    background: var(--white);
+    border-radius: var(--r-xl);
+    padding: 18px 20px;
+    box-shadow: var(--sh-sm);
+    transition:
+      box-shadow var(--dur),
+      transform 0.14s;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .sp-note-card:hover {
+    box-shadow: var(--sh-md);
+    transform: translateY(-2px);
+  }
+  .sp-note-course {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    background: var(--coral-lt);
+    color: var(--coral);
+    border-radius: var(--pill);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    width: fit-content;
+  }
+  .sp-note-title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--ink);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+  .sp-note-excerpt {
+    font-size: 0.76rem;
+    color: var(--ink3);
+    line-height: 1.55;
+    font-weight: 500;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .sp-note-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 10px;
+    border-top: 1px solid var(--bg2);
+  }
+  .sp-note-id {
+    font-size: 0.68rem;
+    font-family: var(--mono);
+    color: var(--ink3);
+    font-weight: 500;
+  }
+
+  .sp-collab-note-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    background: var(--coral-lt);
+    color: var(--coral);
+    border: none;
+    border-radius: var(--pill);
+    font-family: var(--font);
+    font-size: 0.7rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all var(--dur);
+    white-space: nowrap;
+  }
+  .sp-collab-note-btn:hover {
+    background: var(--coral);
+    color: #fff;
+  }
+  .sp-collab-note-btn.sent {
+    background: var(--bg2);
+    color: var(--ink3);
+    cursor: default;
+  }
+
+  .sp-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 40px;
+    color: var(--ink3);
+    font-weight: 600;
+    font-size: 0.88rem;
+  }
+  .sp-empty {
+    text-align: center;
+    padding: 40px 24px;
+    color: var(--ink3);
+  }
+  .sp-empty-icon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+    opacity: 0.35;
+  }
+  .sp-empty p {
+    font-size: 0.86rem;
+    font-weight: 500;
+  }
+
+  .sp-toast {
+    position: fixed;
+    top: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 8px 20px;
+    border-radius: var(--pill);
+    font-size: 0.76rem;
+    font-weight: 700;
+    z-index: 9998;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    transition: opacity 0.2s;
+    pointer-events: none;
+    opacity: 0;
+    font-family: var(--font);
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .sp-nav {
+      padding: 0 14px;
+    }
+    .sp-body {
+      padding: 24px 14px 40px;
+    }
+    .sp-profile {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .sp-stats {
+      justify-content: center;
+    }
+    .sp-actions {
+      justify-content: center;
+    }
+    .sp-notes-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="sp-root" id="spRoot">
+  <nav class="sp-nav">
+    <div class="sp-nav-l">
+      <a href="/app" class="cs-logo">
+        <img
+          class="cs-logo-img"
+          src="{{ url_for('static', path='img/logo.png') }}"
+          alt="CoScribe"
+          onerror="
+            this.style.display = 'none';
+            document.getElementById('spLogoTxt').classList.add('show');
+          "
+        />
+        <span class="cs-logo-text" id="spLogoTxt">
+          <span class="cs-logo-co">Co</span
+          ><span class="cs-logo-scribe">Scribe.</span>
+        </span>
+      </a>
+    </div>
+    <div class="sp-nav-r">
+      <button class="cs-icon-btn" id="themeBtn" title="Night mode">
+        <svg
+          class="ci-moon"
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+        </svg>
+        <svg
+          class="ci-sun"
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="5" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+      </button>
+      <div class="cs-av-chip" title="{{ user.username }}">
+        {{ user.username[:1].upper() }}
+      </div>
+      <a href="/logout" class="cs-icon-btn" title="Logout">
+        <svg
+          width="17"
+          height="17"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+      </a>
+    </div>
+  </nav>
+
+  <div class="sp-body">
+    <div class="sp-breadcrumb">
+      <a href="/app">Home</a><span>›</span> <a href="/students">Students</a
+      ><span>›</span>
+      <span id="breadcrumbName">Loading…</span>
+    </div>
+
+    <div class="sp-profile" id="profileHeader" style="display: none">
+      <div class="sp-avatar-wrap">
+        <div class="sp-avatar" id="profileAvatar">??</div>
+        <div class="sp-online-dot" title="Active on CoScribe"></div>
+      </div>
+      <div class="sp-profile-info">
+        <div class="sp-username" id="profileUsername">Loading…</div>
+        <div class="sp-email" id="profileEmail"></div>
+        <div class="sp-stats">
+          <div class="sp-stat">
+            <div class="sp-stat-val" id="statNotes">–</div>
+            <div class="sp-stat-lbl">Notes</div>
+          </div>
+          <div class="sp-stat">
+            <div class="sp-stat-val" id="statCourses">–</div>
+            <div class="sp-stat-lbl">Courses</div>
+          </div>
+        </div>
+        <div class="sp-actions">
+          <button
+            class="sp-btn-collab"
+            id="globalCollabBtn"
+            onclick="requestGlobalCollab()"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+            >
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            Request to Collaborate
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sp-courses-wrap" id="coursesWrap" style="display: none">
+      <div class="sp-courses-label">Courses</div>
+      <div class="sp-course-tabs" id="courseTabs"></div>
+    </div>
+
+    <div id="notesSection">
+      <div class="sp-loading" id="notesLoading">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          style="animation: spin 1s linear infinite"
+        >
+          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+        </svg>
+        Loading profile…
+      </div>
+      <div style="display: none" id="notesReady">
+        <div class="sp-notes-header">
+          <div class="sp-notes-title" id="notesTitle">Notes</div>
+          <div class="sp-notes-count" id="notesCount"></div>
+        </div>
+        <div class="sp-notes-grid" id="notesGrid"></div>
+        <div class="sp-empty" id="notesEmpty" style="display: none">
+          <div class="sp-empty-icon">📭</div>
+          <p>No notes in this course yet.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sp-toast" id="toast"></div>
+
+<script>
+  const root = document.getElementById("spRoot");
+  if (localStorage.getItem("cs-theme") === "dark") {
+    root.setAttribute("data-theme", "dark");
+  }
+
+  document.getElementById("themeBtn").addEventListener("click", () => {
+    const d = root.getAttribute("data-theme") === "dark";
+    if (d) {
+      root.removeAttribute("data-theme");
+    } else {
+      root.setAttribute("data-theme", "dark");
+    }
+    localStorage.setItem("cs-theme", d ? "light" : "dark");
+  });
+
+  function showToast(msg, duration = 2400) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.style.opacity = "1";
+    clearTimeout(t._t);
+    t._t = setTimeout(() => (t.style.opacity = "0"), duration);
+  }
+
+  const COLOURS = [
+    "#FF6B5B",
+    "#5b7fa6",
+    "#8e44ad",
+    "#27ae60",
+    "#e67e22",
+    "#2980b9",
+    "#c0392b",
+    "#16a085",
+  ];
+
+  function avatarColor(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) {
+      h = str.charCodeAt(i) + ((h << 5) - h);
+    }
+    return COLOURS[Math.abs(h) % COLOURS.length];
+  }
+
+  function escHtml(s) {
+    const d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  const pathParts = window.location.pathname.split("/");
+  const STUDENT_ID = pathParts[pathParts.length - 1];
+
+  let studentNotes = [];
+  let coursesData = {};
+
+  async function loadProfile() {
+    try {
+      const usersRes = await fetch("/api/users");
+      const users = await usersRes.json();
+      const student = users.find((u) => String(u.id) === STUDENT_ID);
+
+      if (!student) {
+        document.getElementById("notesLoading").textContent = "User not found.";
+        return;
+      }
+
+      const initials = student.username.slice(0, 2).toUpperCase();
+      const color = avatarColor(student.username);
+
+      document.getElementById("profileAvatar").textContent = initials;
+      document.getElementById("profileAvatar").style.background = color;
+      document.getElementById("profileUsername").textContent = student.username;
+      document.getElementById("profileEmail").textContent = student.email;
+      document.getElementById("breadcrumbName").textContent = student.username;
+      document.title = `CoScribe — ${student.username}`;
+      document.getElementById("profileHeader").style.display = "";
+
+      const notesRes = await fetch(`/api/users/${STUDENT_ID}/notes`);
+      const data = await notesRes.json();
+
+      if (!notesRes.ok) {
+        throw new Error(data.detail || "Could not load public notes");
+      }
+
+      studentNotes = data;
+
+      coursesData = {};
+      studentNotes.forEach((note) => {
+        if (!coursesData[note.course_id]) {
+          coursesData[note.course_id] = {
+            code: `Course ${note.course_id}`,
+            notes: [],
+          };
+        }
+        coursesData[note.course_id].notes.push(note);
+      });
+
+      const courseIds = Object.keys(coursesData);
+
+      document.getElementById("statNotes").textContent = studentNotes.length;
+      document.getElementById("statCourses").textContent = courseIds.length;
+
+      const tabsEl = document.getElementById("courseTabs");
+      tabsEl.innerHTML = "";
+      document.getElementById("coursesWrap").style.display = "";
+
+      const allTab = document.createElement("button");
+      allTab.className = "sp-course-tab active";
+      allTab.innerHTML = `<span class="sp-course-dot"></span>All (${studentNotes.length})`;
+      allTab.addEventListener("click", () => switchCourse("all", allTab));
+      tabsEl.appendChild(allTab);
+
+      courseIds.forEach((cid) => {
+        const tab = document.createElement("button");
+        tab.className = "sp-course-tab";
+        tab.innerHTML = `<span class="sp-course-dot"></span>${coursesData[cid].code} (${coursesData[cid].notes.length})`;
+        tab.addEventListener("click", () => switchCourse(cid, tab));
+        tabsEl.appendChild(tab);
+      });
+
+      document.getElementById("notesLoading").style.display = "none";
+      document.getElementById("notesReady").style.display = "";
+      renderNotes("all");
+    } catch (e) {
+      document.getElementById("notesLoading").textContent =
+        e.message || "Failed to load profile. Please refresh.";
+      console.error(e);
+    }
+  }
+
+  function switchCourse(courseId, tabEl) {
+    document
+      .querySelectorAll(".sp-course-tab")
+      .forEach((t) => t.classList.remove("active"));
+    tabEl.classList.add("active");
+    renderNotes(courseId);
+  }
+
+  function renderNotes(courseId) {
+    const notes =
+      courseId === "all" ? studentNotes : coursesData[courseId]?.notes || [];
+    const grid = document.getElementById("notesGrid");
+    const empty = document.getElementById("notesEmpty");
+    const title = document.getElementById("notesTitle");
+    const count = document.getElementById("notesCount");
+
+    title.textContent =
+      courseId === "all" ? "All Notes" : coursesData[courseId]?.code || "Notes";
+    count.textContent = `${notes.length} note${notes.length !== 1 ? "s" : ""}`;
+
+    if (notes.length === 0) {
+      grid.innerHTML = "";
+      empty.style.display = "";
+      return;
+    }
+
+    empty.style.display = "none";
+    grid.innerHTML = "";
+
+    notes.forEach((note) => {
+      const excerpt = (note.content || "")
+        .replace(/<[^>]*>/g, "")
+        .substring(0, 100);
+
+      const sentKey = `collab-sent-${note.id}`;
+      const alreadySent = localStorage.getItem(sentKey) === "1";
+
+      const card = document.createElement("div");
+      card.className = "sp-note-card";
+      card.innerHTML = `
+        <div class="sp-note-course">Course ${note.course_id}</div>
+        <div class="sp-note-title">${escHtml(note.title)}</div>
+        ${excerpt ? `<div class="sp-note-excerpt">${escHtml(excerpt)}</div>` : ""}
+        <div class="sp-note-footer">
+          <span class="sp-note-id">Note #${note.id}</span>
+          <button
+            class="sp-collab-note-btn ${alreadySent ? "sent" : ""}"
+            id="collab-btn-${note.id}"
+            onclick="requestNoteCollab(${note.id}, this)"
+            ${alreadySent ? "disabled" : ""}
+          >
+            ${
+              alreadySent
+                ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Sent`
+                : `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Collab`
+            }
+          </button>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  async function requestNoteCollab(noteId, btn) {
+    btn.disabled = true;
+
+    try {
+      const res = await fetch(`/api/notes/${noteId}/collab-request`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.detail || "Could not send request");
+      }
+
+      localStorage.setItem(`collab-sent-${noteId}`, "1");
+      btn.classList.add("sent");
+      btn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Sent`;
+
+      showToast(
+        data.status === "pending"
+          ? "Collaboration request sent!"
+          : `Request already ${data.status}.`,
+      );
+    } catch (e) {
+      btn.disabled = false;
+      showToast(e.message || "Could not send collaboration request");
+    }
+  }
+
+  function requestGlobalCollab() {
+    showToast("Use a note's Collab button to send a request.");
+  }
+
+  loadProfile();
+</script>
+{% endblock %} {% block subpage_scripts %}{% endblock %}

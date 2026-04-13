@@ -27,4 +27,7 @@ class NoteService:
     def get_notes_by_owner_and_course(self, owner_id: int, course_id: int):
         return self.note_repo.get_by_owner_and_course(owner_id, course_id)
     
+    def get_public_notes_by_user(self, user_id: int):
+        return self.note_repo.get_public_notes_by_user(user_id)
+    
     
