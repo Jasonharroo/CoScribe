@@ -443,120 +443,7 @@
     font-family: var(--font);
   }
 
-  /* FLOAT NAV */
-  .float-nav {
-    position: fixed;
-    bottom: 22px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--ink);
-    border-radius: var(--pill);
-    padding: 8px 10px;
-    z-index: 9999;
-    box-shadow: 0 8px 36px rgba(0, 0, 0, 0.3);
-    transition:
-      opacity var(--dur),
-      transform var(--dur);
-    white-space: nowrap;
-    max-width: 95vw;
-    overflow-x: auto;
-  }
-  .float-nav.hidden {
-    opacity: 0;
-    pointer-events: none;
-    transform: translateX(-50%) translateY(12px);
-  }
-  .float-nav-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--font);
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.6);
-    background: transparent;
-    border: none;
-    border-radius: var(--pill);
-    padding: 6px 13px;
-    cursor: pointer;
-    transition: all 0.18s;
-    white-space: nowrap;
-    text-decoration: none;
-  }
-  .float-nav-item:hover,
-  .float-nav-item.active {
-    background: var(--coral);
-    color: #fff;
-  }
-  .float-nav-sep {
-    width: 1px;
-    height: 18px;
-    background: rgba(255, 255, 255, 0.14);
-    flex-shrink: 0;
-  }
-  .float-nav-private {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--font);
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.7);
-    background: transparent;
-    border: none;
-    border-radius: var(--pill);
-    padding: 6px 13px;
-    cursor: pointer;
-    transition: all 0.18s;
-    text-decoration: none;
-  }
-  .float-nav-private:hover {
-    background: rgba(255, 255, 255, 0.12);
-    color: #fff;
-  }
-  .float-nav-dots {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: rgba(255, 255, 255, 0.5);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    transition: background 0.18s;
-    flex-shrink: 0;
-  }
-  .float-nav-show {
-    position: fixed;
-    bottom: 22px;
-    right: 22px;
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background: var(--ink);
-    color: rgba(255, 255, 255, 0.7);
-    border: none;
-    cursor: pointer;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.85rem;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
-    z-index: 9999;
-  }
-  .float-nav-show:hover {
-    background: var(--coral);
-    color: #fff;
-  }
-  .float-nav-show.visible {
-    display: flex;
-  }
+
 
   @media (max-width: 640px) {
     .mc-nav {
@@ -785,20 +672,6 @@
   </div>
 </div>
 
-<!-- Float nav -->
-<div class="float-nav" id="floatNav">
-  {% for course in courses %} {% if course.id in user_course_ids %}
-  <a href="/notes/new?course_id={{ course.id }}" class="float-nav-item"
-    >{{ course.code }}</a
-  >
-  {% endif %} {% endfor %}
-  <div class="float-nav-sep"></div>
-  <a href="/private-notes" class="float-nav-private">🔒 Private</a>
-  <div class="float-nav-sep"></div>
-  <button class="float-nav-dots" id="hideNavBtn">⋯</button>
-</div>
-<button class="float-nav-show" id="showNavBtn">⋯</button>
-
 <!-- Toast element -->
 <div class="mc-toast" id="toast"></div>
 
@@ -834,24 +707,6 @@
     const isDark = root.getAttribute("data-theme") === "dark";
     applyTheme(!isDark);
     localStorage.setItem("cs-theme", isDark ? "light" : "dark");
-  });
-
-  /* Float nav */
-  const floatNav = document.getElementById("floatNav"),
-    showNavBtn = document.getElementById("showNavBtn");
-  if (localStorage.getItem("cs-nav-hidden") === "1") {
-    floatNav.classList.add("hidden");
-    showNavBtn.classList.add("visible");
-  }
-  document.getElementById("hideNavBtn").addEventListener("click", () => {
-    floatNav.classList.add("hidden");
-    showNavBtn.classList.add("visible");
-    localStorage.setItem("cs-nav-hidden", "1");
-  });
-  showNavBtn.addEventListener("click", () => {
-    floatNav.classList.remove("hidden");
-    showNavBtn.classList.remove("visible");
-    localStorage.setItem("cs-nav-hidden", "0");
   });
 
   /* Catalog search */
