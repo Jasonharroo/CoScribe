@@ -38,6 +38,8 @@ class NoteRepository:
             note.title = note_data.title
         if note_data.content is not None:
             note.content = note_data.content
+        if note_data.is_public is not None:
+            note.is_public = note_data.is_public
 
         try:
             self.db.add(note)

@@ -203,6 +203,32 @@
 .cs-hl-dot:hover { transform:scale(1.18);border-color:var(--cs-ink-2); }
 .cs-hl-remove { font-size:.7rem;color:var(--cs-ink-3);display:flex;align-items:center;justify-content:center;background:var(--cs-bg-2) !important; }
 
+.cs-visibility-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--cs-border);
+  border-radius: 999px;
+  background: var(--cs-white);
+  color: var(--cs-ink);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.cs-visibility-toggle input[type="checkbox"] {
+  accent-color: var(--cs-red);
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+.cs-visibility-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 /* record btn */
 .cs-rec-btn {
   display:flex;align-items:center;gap:7px;padding:5px 13px;

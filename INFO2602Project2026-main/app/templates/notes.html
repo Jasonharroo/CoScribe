@@ -87,6 +87,29 @@ endblock %} {% block subpage_content %}
         </svg>
       </button>
 
+      <label
+        class="cs-visibility-toggle"
+        title="Choose whether this note is visible to other users"
+      >
+        <input
+          type="checkbox"
+          id="notePublicToggle"
+          {%
+          if
+          note
+          and
+          note.is_public
+          %}checked{%
+          endif
+          %}
+        />
+        <span class="cs-visibility-label">
+          <span id="noteVisibilityText">
+            {% if note and note.is_public %}Public{% else %}Private{% endif %}
+          </span>
+        </span>
+      </label>
+
       <button class="cs-btn-primary" id="saveNoteBtn" type="button">
         Save
       </button>
@@ -655,7 +678,8 @@ endblock %} {% block subpage_content %}
   window.COSCRIBE_NOTE = {
     isNew: {{ is_new|tojson }},
     noteId: {{ (note.id if note else None)|tojson }},
-    courseId: {{ (note.course_id if note else selected_course_id)|tojson }}
+    courseId: {{ (note.course_id if note else selected_course_id)|tojson }},
+    isPublic: {{ (note.is_public if note else False)|tojson }}
   };
 </script>
 

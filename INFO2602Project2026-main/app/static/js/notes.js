@@ -4,6 +4,8 @@ const titleInput = document.getElementById("noteTitle");
 const navTitle = document.getElementById("navTitle");
 const saveBtn = document.getElementById("saveNoteBtn");
 const deleteBtn = document.getElementById("deleteNoteBtn");
+const publicToggle = document.getElementById("notePublicToggle");
+const visibilityText = document.getElementById("noteVisibilityText");
 
 /* Theme */
 (function initTheme() {
@@ -249,7 +251,7 @@ if (navTitle && titleInput) {
   navTitle.textContent = titleInput.value || "Untitled Note";
 }
 
-/* Fake autosave label */
+
 let saveTimer = null;
 function triggerSaveLabel() {
   const lbl = document.getElementById("savedLbl");
@@ -601,10 +603,11 @@ async function saveNote() {
   if (lbl) lbl.textContent = "Saving…";
 
   const payload = {
-    title,
-    content,
-    course_id: window.COSCRIBE_NOTE?.courseId || 1,
-  };
+  title,
+  content,
+  course_id: window.COSCRIBE_NOTE?.courseId || 1,
+  is_public: publicToggle?.checked || false,
+};
 
   const isNew = window.COSCRIBE_NOTE?.isNew;
   const noteId = window.COSCRIBE_NOTE?.noteId;
@@ -663,6 +666,18 @@ async function deleteNote() {
     alert("Could not delete note.");
   }
 }
+
+function syncVisibilityLabel() {
+  if (!visibilityText || !publicToggle) return;
+  visibilityText.textContent = publicToggle.checked ? "Public" : "Private";
+}
+
+publicToggle?.addEventListener("change", () => {
+  syncVisibilityLabel();
+  triggerSaveLabel();
+});
+
+syncVisibilityLabel();
 
 document.addEventListener("DOMContentLoaded", () => {
   saveBtn?.addEventListener("click", saveNote);
