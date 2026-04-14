@@ -656,7 +656,17 @@ endblock %} {% block subpage_content %}
           </div>
         </div>
       </div>
+      <div class="cs-collab-bar">
+        <span class="cs-collab-label">Collaborators:</span>
 
+        <div class="cs-collab-list">
+          {% for c in collaborators %}
+          <div class="cs-av xs" title="{{ c.username }}">
+            {{ c.username[:1].upper() }}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
       <div class="cs-statusbar">
         <span style="flex: 1"></span>
         <span class="cs-saved" id="savedLbl">Not saved yet</span>

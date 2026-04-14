@@ -480,6 +480,30 @@ block external_css %}
       {% endif %}
     </div>
 
+    <div
+      id="notifDropdown"
+      style="
+        display: none;
+        position: absolute;
+        top: 52px;
+        right: 52px;
+        width: 320px;
+        max-height: 360px;
+        overflow-y: auto;
+        background: var(--cs-white);
+        border: 1px solid var(--cs-border);
+        border-radius: 14px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+        padding: 12px;
+        z-index: 300;
+      "
+    >
+      <div style="font-weight: 700; margin-bottom: 10px">
+        Collaboration Requests
+      </div>
+      <div id="notifList">Loading...</div>
+    </div>
+
     <a href="/logout" class="cs-icon-btn" title="Logout">
       <svg
         width="17"
@@ -723,6 +747,78 @@ block external_css %}
     const isDark = bod.getAttribute("data-theme") === "dark";
     applyTheme(!isDark);
     localStorage.setItem("cs-theme", isDark ? "light" : "dark");
+  });
+</script>
+
+<script>
+  const avatar = document.querySelector(".home-nav-r .cs-av");
+  const notifDropdown = document.getElementById("notifDropdown");
+  const notifList = document.getElementById("notifList");
+
+  async function loadPendingRequests() {
+    const res = await fetch("/api/collab-requests/pending");
+    const data = await res.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      notifList.innerHTML = `<div style="color: var(--cs-ink-3); font-size: 0.85rem;">No pending requests</div>`;
+      return;
+    }
+
+    notifList.innerHTML = data
+      .map(
+        (req) => `
+      <div style="padding: 10px 0; border-top: 1px solid var(--cs-border);">
+        <div style="font-size: 0.84rem; margin-bottom: 8px;">
+          User <strong>#${req.user_id}</strong> requested access to note <strong>#${req.note_id}</strong>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button onclick="respondToRequest(${req.id}, 'accepted')" class="cs-btn-red" style="padding: 6px 10px; border-radius: 8px; border: none;">
+            Accept
+          </button>
+          <button onclick="respondToRequest(${req.id}, 'rejected')" class="cs-btn-outline" style="padding: 6px 10px; border-radius: 8px;">
+            Reject
+          </button>
+        </div>
+      </div>
+    `,
+      )
+      .join("");
+  }
+
+  async function respondToRequest(collabId, status) {
+    const res = await fetch(
+      `/api/collab-requests/${collabId}/respond?status=${status}`,
+      {
+        method: "POST",
+      },
+    );
+
+    if (!res.ok) {
+      alert("Could not update request.");
+      return;
+    }
+
+    await loadPendingRequests();
+    window.location.reload();
+  }
+
+  avatar?.addEventListener("click", async (e) => {
+    e.stopPropagation();
+    if (!notifDropdown) return;
+
+    const isOpen = notifDropdown.style.display === "block";
+    notifDropdown.style.display = isOpen ? "none" : "block";
+
+    if (!isOpen) {
+      await loadPendingRequests();
+    }
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!notifDropdown) return;
+    if (!notifDropdown.contains(e.target) && !avatar?.contains(e.target)) {
+      notifDropdown.style.display = "none";
+    }
   });
 </script>
 {% endblock %}

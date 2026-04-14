@@ -1,5 +1,7 @@
 from fastapi import Request
 from fastapi.responses import HTMLResponse
+from sqlmodel import select
+
 from app.dependencies.session import SessionDep
 from app.dependencies.auth import AuthDep
 from app.repositories.note import NoteRepository
@@ -11,7 +13,7 @@ from app.services.collab_service import CollaborationService
 from app.models.course import Course
 from app.models.voiceNote import VoiceNote
 from app.models.collab import Collaboration
-from sqlmodel import select
+
 from . import router, templates
 
 
@@ -19,19 +21,38 @@ from . import router, templates
 async def user_home_view(
     request: Request,
     user: AuthDep,
-    db: SessionDep
+    db: SessionDep,
 ):
     collab_repo = CollaborationRepository(db)
     collab_service = CollaborationService(collab_repo)
 
     note_repo = NoteRepository(db)
     note_service = NoteService(note_repo)
-    notes = note_service.get_notes_by_owner(user.id)
-    note_ids = [n.id for n in notes]
 
-    pending_requests = collab_service.get_pending_for_note_owner(note_ids)
+    # Notes owned by the current user
+    own_notes = note_service.get_notes_by_owner(user.id)
 
+    # Pending collaboration requests should only be for notes I own
+    own_note_ids = [n.id for n in own_notes]
+    pending_requests = collab_service.get_pending_for_note_owner(own_note_ids)
     pending_count = len(pending_requests)
+
+    # Notes shared with me through accepted collaborations
+    accepted_collabs = db.exec(
+        select(Collaboration).where(
+            Collaboration.user_id == user.id,
+            Collaboration.status == "accepted",
+        )
+    ).all()
+
+    collab_note_ids = [c.note_id for c in accepted_collabs]
+    collab_notes = note_service.get_notes_by_ids(collab_note_ids)
+
+    # Combine owned + shared notes without duplicates
+    notes_map = {note.id: note for note in own_notes}
+    for note in collab_notes:
+        notes_map[note.id] = note
+    notes = list(notes_map.values())
 
     uc_repo = UserCourseRepository(db)
     uc_service = UserCourseService(uc_repo)
@@ -47,7 +68,7 @@ async def user_home_view(
         courses = []
 
     voice_note_count = len(
-    db.exec(select(VoiceNote).where(VoiceNote.owner_id == user.id)).all()
+        db.exec(select(VoiceNote).where(VoiceNote.owner_id == user.id)).all()
     )
 
     collaborator_count = len(
@@ -66,5 +87,5 @@ async def user_home_view(
             "voice_note_count": voice_note_count,
             "collaborator_count": collaborator_count,
             "pending_collab_count": pending_count,
-        }
+        },
     )

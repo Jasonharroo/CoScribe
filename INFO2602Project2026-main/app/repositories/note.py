@@ -29,6 +29,13 @@ class NoteRepository:
     def get_by_id(self, note_id: int) -> Optional[Note]:
         return self.db.get(Note, note_id)
 
+    def get_notes_by_ids(self, note_ids: list[int]) -> List[Note]:
+        if not note_ids:
+            return []
+        return self.db.exec(
+            select(Note).where(Note.id.in_(note_ids)).order_by(Note.id.desc())
+        ).all()
+
     def update(self, note_id: int, note_data: NoteUpdate) -> Note:
         note = self.db.get(Note, note_id)
         if not note:

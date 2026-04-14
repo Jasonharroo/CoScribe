@@ -13,12 +13,24 @@ from app.services.user_course_service import UserCourseService
 from app.schemas.note import NoteCreate, NoteUpdate
 from app.dependencies.auth import AuthDep
 from app.models.course import Course
-
+from app.models.collab import Collaboration
+from app.models.user import User
+from app.repositories.collab import CollaborationRepository
+from app.services.collab_service import CollaborationService
 from . import templates
 
 router = APIRouter(prefix="/notes", tags=["Notes"])
 api_router = APIRouter(prefix="/notes", tags=["Notes API"])
 
+def user_can_access_note(db: Session, user_id: int, note) -> bool:
+    if note.owner_id == user_id:
+        return True
+
+    collab_repo = CollaborationRepository(db)
+    collab_service = CollaborationService(collab_repo)
+
+    accepted = collab_service.get_accepted_collaboration(user_id, note.id)
+    return accepted is not None
 
 def get_note_service(db: Session = Depends(get_session)):
     repo = NoteRepository(db)
@@ -62,7 +74,6 @@ def all_notes_view(
         }
     )
 
-
 @router.get("/new", response_class=HTMLResponse)
 def new_note_view(
     request: Request,
@@ -92,29 +103,29 @@ def new_note_view(
         }
     )
 
-@router.get("/new", response_class=HTMLResponse)
-def new_note_view(
-    request: Request,
-    user: AuthDep,
-    db: Session = Depends(get_session),
-):
-    course_repo = CourseRepository(db)
-    course_service = CourseService(course_repo)
-    courses = course_service.get_all_courses()
+# @router.get("/new", response_class=HTMLResponse)
+# def new_note_view(
+#     request: Request,
+#     user: AuthDep,
+#     db: Session = Depends(get_session),
+# ):
+#     course_repo = CourseRepository(db)
+#     course_service = CourseService(course_repo)
+#     courses = course_service.get_all_courses()
 
-    return templates.TemplateResponse(
-        request=request,
-        name="notes.html",  
-        context={
-            "user": user,
-            "note": None,
-            "is_new": True,
-            "courses": courses,
-            "selected_course_id": None,
-            "course_notes": [],
-            "voice_notes": [],
-        }
-    )
+#     return templates.TemplateResponse(
+#         request=request,
+#         name="notes.html",  
+#         context={
+#             "user": user,
+#             "note": None,
+#             "is_new": True,
+#             "courses": courses,
+#             "selected_course_id": None,
+#             "course_notes": [],
+#             "voice_notes": [],
+#         }
+#     )
 
 @router.get("/{note_id}", response_class=HTMLResponse)
 def note_view(
@@ -130,12 +141,30 @@ def note_view(
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
 
-    if note.owner_id != user.id:
+    if not user_can_access_note(db, user.id, note):
         raise HTTPException(status_code=403, detail="Not authorized")
 
     courses = get_user_registered_courses(db, user.id)
     course_notes = service.get_notes_by_owner_and_course(user.id, note.course_id)
     voice_notes = voice_note_service.get_voice_notes_for_note(note.id)
+
+    collab_repo = CollaborationRepository(db)
+    collab_service = CollaborationService(collab_repo)
+
+    accepted_collabs = db.exec(
+        select(Collaboration).where(
+            Collaboration.note_id == note_id,
+            Collaboration.status == "accepted"
+        )
+    ).all()
+
+    collaborator_ids = [c.user_id for c in accepted_collabs]
+
+    all_user_ids = [note.owner_id] + collaborator_ids
+
+    users = db.exec(
+        select(User).where(User.id.in_(all_user_ids))
+    ).all()    
 
     return templates.TemplateResponse(
         request=request,
@@ -148,9 +177,9 @@ def note_view(
             "selected_course_id": note.course_id,
             "course_notes": course_notes,
             "voice_notes": voice_notes,
+            "collaborators": users,
         }
     )
-
 
 @api_router.post("/")
 def create_note(
@@ -170,7 +199,6 @@ def create_note(
 
     return service.create_note(note, user.id)
 
-
 @api_router.get("/")
 def get_notes(
     user: AuthDep,
@@ -178,17 +206,18 @@ def get_notes(
 ):
     return service.get_notes_by_owner(user.id)
 
-
 @api_router.get("/{note_id}")
 def get_note_api(
     note_id: int,
     user: AuthDep,
-    service: NoteService = Depends(get_note_service)
+    service: NoteService = Depends(get_note_service),
+    db: Session = Depends(get_session),
 ):
     note = service.get_note(note_id)
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
-    if note.owner_id != user.id:
+    
+    if not user_can_access_note(db, user.id, note):
         raise HTTPException(status_code=403, detail="Not authorized")
     return note
 
@@ -204,18 +233,18 @@ def update_note(
     note_id: int,
     note: NoteUpdate,
     user: AuthDep,
-    service: NoteService = Depends(get_note_service)
+    service: NoteService = Depends(get_note_service),
+    db: Session = Depends(get_session),
 ):
     existing_note = service.get_note(note_id)
 
     if not existing_note:
         raise HTTPException(status_code=404, detail="Note not found")
 
-    if existing_note.owner_id != user.id:
+    if not user_can_access_note(db, user.id, existing_note):
         raise HTTPException(status_code=403, detail="Not authorized")
 
     return service.update_note(note_id, note)
-
 
 @api_router.delete("/{note_id}")
 def delete_note(

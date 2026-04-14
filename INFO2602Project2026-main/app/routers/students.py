@@ -7,6 +7,7 @@ from app.repositories.note import NoteRepository
 from app.services.note_service import NoteService
 from app.repositories.collab import CollaborationRepository
 from app.services.collab_service import CollaborationService
+from app.models.collab import Collaboration
 from fastapi import APIRouter
 from . import templates
 
@@ -69,9 +70,6 @@ async def get_user_notes(
 
     return notes
 
-
-
-
 @api_router.post("/notes/{note_id}/collab-request")
 async def request_collaboration(
     note_id: int,
@@ -125,3 +123,38 @@ async def get_pending_requests(
     requests = collab_service.get_pending_for_note_owner(note_ids)
 
     return requests
+
+@api_router.post("/collab-requests/{collab_id}/respond")
+async def respond_to_collab_request(
+    collab_id: int,
+    status: str,
+    current_user: AuthDep,
+    db: SessionDep
+):
+    if status not in {"accepted", "rejected"}:
+        raise HTTPException(status_code=400, detail="Invalid status")
+
+    collab = db.get(Collaboration, collab_id)
+    if not collab:
+        raise HTTPException(status_code=404, detail="Request not found")
+
+    note_repo = NoteRepository(db)
+    note = note_repo.get_by_id(collab.note_id)
+    if not note:
+        raise HTTPException(status_code=404, detail="Note not found")
+
+    if note.owner_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    collab_repo = CollaborationRepository(db)
+    collab_service = CollaborationService(collab_repo)
+
+    updated = collab_service.update_status(collab_id, status)
+
+    return {
+        "message": f"Request {status}",
+        "collaboration_id": updated.id,
+        "status": updated.status,
+        "note_id": updated.note_id,
+        "user_id": updated.user_id,
+    }

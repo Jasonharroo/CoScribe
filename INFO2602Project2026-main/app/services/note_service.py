@@ -14,6 +14,9 @@ class NoteService:
 
     def get_note(self, note_id: int):
         return self.note_repo.get_by_id(note_id)
+    
+    def get_notes_by_ids(self, note_ids: list[int]):
+        return self.note_repo.get_notes_by_ids(note_ids)
 
     def update_note(self, note_id: int, note_data: NoteUpdate):
         return self.note_repo.update(note_id, note_data)

@@ -895,8 +895,7 @@
         .replace(/<[^>]*>/g, "")
         .substring(0, 100);
 
-      const sentKey = `collab-sent-${note.id}`;
-      const alreadySent = localStorage.getItem(sentKey) === "1";
+      const alreadySent = false;
 
       const card = document.createElement("div");
       card.className = "sp-note-card";
@@ -939,7 +938,6 @@
         throw new Error(data.detail || "Could not send request");
       }
 
-      localStorage.setItem(`collab-sent-${noteId}`, "1");
       btn.classList.add("sent");
       btn.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Sent`;
 
