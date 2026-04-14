@@ -1,7 +1,7 @@
 {% extends "authenticated-base.html" %} {% block title %}CoScribe — Notes{%
 endblock %} {% block external_css %}
 <link
-  href="{{ url_for('static', path='css/notes.css') }}?v=3889887"
+  href="{{ url_for('static', path='css/notes.css') }}?v=3889888"
   rel="stylesheet"
 />
 {% endblock %} {% block additional_styles %} #sidebar, .navbar { display: none
@@ -684,5 +684,5 @@ endblock %} {% block subpage_content %}
 </script>
 
 {% endblock %} {% block subpage_scripts %}
-<script src="{{ url_for('static', path='js/notes.js') }}?v=3889887"></script>
+<script src="{{ url_for('static', path='js/notes.js') }}?v=3889888"></script>
 {% endblock %}
