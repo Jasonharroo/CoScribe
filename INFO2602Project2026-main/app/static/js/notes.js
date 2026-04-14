@@ -7,7 +7,55 @@ const deleteBtn = document.getElementById("deleteNoteBtn");
 const publicToggle = document.getElementById("notePublicToggle");
 const visibilityText = document.getElementById("noteVisibilityText");
 
-/* Theme */
+let socket = null;
+let isRemoteUpdate = false;
+
+function initWebSocket() {
+  const noteId = window.COSCRIBE_NOTE?.noteId;
+
+  if (!noteId) return;
+
+  const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+  const wsUrl = `${protocol}://${window.location.host}/ws/notes/${noteId}`;
+
+  socket = new WebSocket(wsUrl);
+
+  socket.onopen = () => {
+    console.log("WebSocket connected");
+  };
+
+  socket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+
+    if (data.type === "update") {
+      
+      if (ED && data.content === ED.innerHTML) return;
+
+      isRemoteUpdate = true;
+
+      if (data.content !== undefined && ED) {
+        ED.innerHTML = data.content;
+      }
+
+      if (data.title !== undefined && titleInput) {
+        titleInput.value = data.title;
+        navTitle.textContent = data.title || "Untitled Note";
+      }
+
+      isRemoteUpdate = false;
+    }
+  };
+
+  socket.onclose = () => {
+    console.log("WebSocket disconnected");
+  };
+
+  socket.onerror = (err) => {
+    console.error("WebSocket error:", err);
+  };
+}
+
+
 function updateLogoForTheme(isDark) {
   const logo = document.querySelector(".cs-logo-img");
   if (logo) {
@@ -27,7 +75,7 @@ function applyTheme(isDark) {
   updateLogoForTheme(isDark);
 }
 
-// Apply theme on page load
+
 const savedTheme = localStorage.getItem("cs-theme");
 if (savedTheme === "dark") {
   applyTheme(true);
@@ -39,7 +87,7 @@ document.getElementById("themeBtn")?.addEventListener("click", () => {
   localStorage.setItem("cs-theme", isDark ? "light" : "dark");
 });
 
-/* Panels */
+
 const cPanel = document.getElementById("coursesPanel");
 const nPanel = document.getElementById("notesPanel");
 let pState = 0;
@@ -89,7 +137,7 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-/* Toolbar state */
+
 const TB_STATES = {
   "btn-bold": "bold",
   "btn-italic": "italic",
@@ -157,7 +205,6 @@ function toggleCode() {
   sel.removeAllRanges();
 }
 
-/* Button wiring */
 document.getElementById("btn-bold")?.addEventListener("click", () => execCmd("bold"));
 document.getElementById("btn-italic")?.addEventListener("click", () => execCmd("italic"));
 document.getElementById("btn-underline")?.addEventListener("click", () => execCmd("underline"));
@@ -175,7 +222,6 @@ document.getElementById("btn-right")?.addEventListener("click", () => execCmd("j
 document.getElementById("btn-undo")?.addEventListener("click", () => execCmd("undo"));
 document.getElementById("btn-redo")?.addEventListener("click", () => execCmd("redo"));
 
-/* Keyboard shortcuts */
 ED?.addEventListener("keydown", (e) => {
   const ctrl = e.ctrlKey || e.metaKey;
   if (!ctrl) return;
@@ -194,7 +240,6 @@ ED?.addEventListener("keydown", (e) => {
   }
 });
 
-/* Highlight */
 const hlBtn = document.getElementById("hlBtn");
 const hlPicker = document.getElementById("hlPicker");
 const hlSwatch = document.getElementById("hlSwatch");
@@ -221,12 +266,10 @@ window.applyHL = function (color) {
   hlPicker?.classList.remove("open");
 };
 
-/* Font picker */
 document.getElementById("fontPicker")?.addEventListener("change", function () {
   if (ED) ED.style.fontFamily = this.value;
 });
 
-/* Image insert */
 document.getElementById("btn-img")?.addEventListener("click", () => {
   document.getElementById("imgFile")?.click();
 });
@@ -256,7 +299,6 @@ document.getElementById("imgFile")?.addEventListener("change", function () {
   this.value = "";
 });
 
-/* Title sync */
 titleInput?.addEventListener("input", function () {
   if (navTitle) navTitle.textContent = this.value || "Untitled Note";
 });
@@ -264,7 +306,6 @@ titleInput?.addEventListener("input", function () {
 if (navTitle && titleInput) {
   navTitle.textContent = titleInput.value || "Untitled Note";
 }
-
 
 let saveTimer = null;
 function triggerSaveLabel() {
@@ -277,10 +318,30 @@ function triggerSaveLabel() {
   }, 1200);
 }
 
-ED?.addEventListener("input", triggerSaveLabel);
-titleInput?.addEventListener("input", triggerSaveLabel);
+ED?.addEventListener("input", () => {
+  triggerSaveLabel();
 
-/* Recording */
+  if (isRemoteUpdate) return;
+  if (!socket || socket.readyState !== WebSocket.OPEN) return;
+
+  socket.send(JSON.stringify({
+    content: ED.innerHTML,
+    title: titleInput?.value || ""
+  }));
+});
+
+titleInput?.addEventListener("input", () => {
+  triggerSaveLabel();
+
+  if (isRemoteUpdate) return;
+  if (!socket || socket.readyState !== WebSocket.OPEN) return;
+
+  socket.send(JSON.stringify({
+    content: ED?.innerHTML || "",
+    title: titleInput.value
+  }));
+});
+
 let recOn = false;
 let recInterval = null;
 let recSecs = 0;
@@ -589,7 +650,6 @@ window.togglePlay = function (btn) {
   btn.textContent = btn.textContent === "▶" ? "⏸" : "▶";
 };
 
-/* Course search */
 document.getElementById("courseSearch")?.addEventListener("input", function () {
   const q = this.value.toLowerCase();
   document.querySelectorAll(".cs-ci").forEach((i) => {
@@ -597,7 +657,6 @@ document.getElementById("courseSearch")?.addEventListener("input", function () {
   });
 });
 
-/* Save */
 async function saveNote() {
   const title = titleInput?.value.trim() || "";
   const content = ED?.innerHTML.trim() || "";
@@ -652,7 +711,6 @@ async function saveNote() {
   }
 }
 
-/* Delete */
 async function deleteNote() {
   const isNew = window.COSCRIBE_NOTE?.isNew;
   const noteId = window.COSCRIBE_NOTE?.noteId;
@@ -696,4 +754,6 @@ syncVisibilityLabel();
 document.addEventListener("DOMContentLoaded", () => {
   saveBtn?.addEventListener("click", saveNote);
   deleteBtn?.addEventListener("click", deleteNote);
+
+  initWebSocket();
 });
