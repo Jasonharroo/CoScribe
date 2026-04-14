@@ -14,7 +14,7 @@
   }
   #content {
     padding: 0 !important;
-    background: #f6f4f0 !important;
+    background: #f5f0e8 !important;
   }
   body {
     overflow-x: hidden;
@@ -25,8 +25,8 @@
 {% endblock %} {% block internal_css %}
 <style>
   :root {
-    --bg: #f6f4f0;
-    --bg2: #edeae3;
+    --bg: #f5f0e8;
+    --bg2: #ede6d6;
     --white: #ffffff;
     --coral: #ff6b5b;
     --coral-dk: #e5503f;
@@ -46,8 +46,8 @@
     --mono: "DM Mono", monospace;
   }
   [data-theme="dark"] {
-    --bg: #100e0b;
-    --bg2: #1a1814;
+    --bg: #141210;
+    --bg2: #1c1a16;
     --white: #1e1c17;
     --coral-lt: #241310;
     --ink: #f0ebe3;
@@ -231,12 +231,18 @@
     align-items: center;
     gap: 14px;
     background: var(--white);
-    border-radius: var(--r-xl);
+    border-radius: 14px;
     padding: 16px 20px;
     box-shadow: var(--sh-sm);
-    transition: box-shadow var(--dur);
+    transition:
+      background var(--dur),
+      color var(--dur),
+      box-shadow var(--dur);
+    color: var(--ink);
   }
   .mc-course-row:hover {
+    background: var(--coral);
+    color: #fff;
     box-shadow: var(--sh-md);
   }
   .mc-course-dot {
@@ -245,6 +251,9 @@
     border-radius: 50%;
     background: var(--coral);
     flex-shrink: 0;
+  }
+  .mc-course-row:hover .mc-course-dot {
+    background: rgba(255, 255, 255, 0.6);
   }
   .mc-course-info {
     flex: 1;
@@ -259,6 +268,10 @@
     color: var(--ink3);
     font-weight: 500;
     margin-top: 2px;
+  }
+  .mc-course-row:hover .mc-course-code,
+  .mc-course-row:hover .mc-course-name {
+    color: #fff;
   }
   .mc-remove-btn {
     padding: 7px 16px;
@@ -278,6 +291,10 @@
   .mc-remove-btn:hover {
     background: #ffeaea;
     color: #e05a47;
+  }
+  .mc-course-row:hover .mc-remove-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
   }
   .mc-no-courses {
     font-size: 0.86rem;
@@ -324,14 +341,19 @@
     align-items: center;
     gap: 12px;
     background: var(--white);
-    border-radius: var(--r-xl);
+    border-radius: 14px;
     padding: 14px 18px;
     box-shadow: var(--sh-sm);
     transition:
+      background var(--dur),
+      color var(--dur),
       box-shadow var(--dur),
       transform 0.14s;
+    color: var(--ink);
   }
   .mc-catalog-card:hover {
+    background: var(--coral);
+    color: #fff;
     box-shadow: var(--sh-md);
     transform: translateY(-1px);
   }
@@ -348,6 +370,10 @@
     color: var(--ink3);
     font-weight: 500;
     margin-top: 2px;
+  }
+  .mc-catalog-card:hover .mc-catalog-code,
+  .mc-catalog-card:hover .mc-catalog-name {
+    color: #fff;
   }
 
   /* Add / added button */
@@ -373,6 +399,13 @@
     background: var(--coral-dk);
     transform: translateY(-1px);
   }
+  .mc-catalog-card:hover .mc-add-btn {
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: none;
+  }
+  .mc-catalog-card:hover .mc-add-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
   .mc-add-btn.added {
     background: var(--bg2);
     color: var(--ink3);
@@ -382,6 +415,11 @@
   .mc-add-btn.added:hover {
     transform: none;
     background: var(--bg2);
+  }
+  .mc-catalog-card:hover .mc-add-btn.added,
+  .mc-catalog-card:hover .mc-add-btn.added:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
   }
 
   /* toast */
@@ -745,14 +783,35 @@
 <script>
   /* Theme */
   const root = document.getElementById("mcRoot");
-  if (localStorage.getItem("cs-theme") === "dark")
-    root.setAttribute("data-theme", "dark");
+  
+  function updateLogo(isDark) {
+    const logo = document.querySelector(".cs-logo-img");
+    if (logo) {
+      const filename = isDark ? 'dlogo.png' : 'logo.png';
+      const timestamp = new Date().getTime();
+      logo.src = `/static/img/${filename}?v=${timestamp}`;
+      logo.style.display = 'block';
+    }
+  }
+  
+  function applyTheme(isDark) {
+    if (isDark) {
+      root.setAttribute("data-theme", "dark");
+    } else {
+      root.removeAttribute("data-theme");
+    }
+    updateLogo(isDark);
+  }
+  
+  const savedTheme = localStorage.getItem("cs-theme");
+  if (savedTheme === "dark") {
+    applyTheme(true);
+  }
+  
   document.getElementById("themeBtn").addEventListener("click", () => {
-    const d = root.getAttribute("data-theme") === "dark";
-    d
-      ? root.removeAttribute("data-theme")
-      : root.setAttribute("data-theme", "dark");
-    localStorage.setItem("cs-theme", d ? "light" : "dark");
+    const isDark = root.getAttribute("data-theme") === "dark";
+    applyTheme(!isDark);
+    localStorage.setItem("cs-theme", isDark ? "light" : "dark");
   });
 
   /* Float nav */

@@ -301,6 +301,29 @@
 .cs-rec-stop { background:var(--cs-red);color:#fff;border:none;border-radius:7px;padding:7px 12px;cursor:pointer;font-size:.76rem;font-family:var(--cs-font-b);font-weight:500;white-space:nowrap;transition:background var(--cs-dur) var(--cs-ease); }
 .cs-rec-stop:hover { background:var(--cs-red-dk); }
 
+/* ── SCROLLBAR ── */
+.cs-panel::-webkit-scrollbar,
+.cs-editor-body::-webkit-scrollbar,
+.cs-note-cards::-webkit-scrollbar {
+  width: 8px;
+}
+.cs-panel::-webkit-scrollbar-track,
+.cs-editor-body::-webkit-scrollbar-track,
+.cs-note-cards::-webkit-scrollbar-track {
+  background: transparent;
+}
+.cs-panel::-webkit-scrollbar-thumb,
+.cs-editor-body::-webkit-scrollbar-thumb,
+.cs-note-cards::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+.cs-panel,
+.cs-editor-body,
+.cs-note-cards {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
 /* responsive */
 @media(max-width:768px) {
   .cs-nav-c { display:none; }

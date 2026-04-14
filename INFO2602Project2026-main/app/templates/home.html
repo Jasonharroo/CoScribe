@@ -694,18 +694,35 @@ block external_css %}
 
 <script>
   const bod = document.body;
-  if (localStorage.getItem("cs-theme") === "dark") {
-    bod.setAttribute("data-theme", "dark");
+  
+  function updateLogo(isDark) {
+    const logo = document.querySelector(".cs-logo-img");
+    if (logo) {
+      const filename = isDark ? 'dlogo.png' : 'logo.png';
+      const timestamp = new Date().getTime();
+      logo.src = `/static/img/${filename}?v=${timestamp}`;
+      logo.style.display = 'block';
+    }
+  }
+  
+  function applyTheme(isDark) {
+    if (isDark) {
+      bod.setAttribute("data-theme", "dark");
+    } else {
+      bod.removeAttribute("data-theme");
+    }
+    updateLogo(isDark);
+  }
+  
+  const savedTheme = localStorage.getItem("cs-theme");
+  if (savedTheme === "dark") {
+    applyTheme(true);
   }
 
   document.getElementById("themeBtn").addEventListener("click", () => {
-    const dark = bod.getAttribute("data-theme") === "dark";
-    if (dark) {
-      bod.removeAttribute("data-theme");
-    } else {
-      bod.setAttribute("data-theme", "dark");
-    }
-    localStorage.setItem("cs-theme", dark ? "light" : "dark");
+    const isDark = bod.getAttribute("data-theme") === "dark";
+    applyTheme(!isDark);
+    localStorage.setItem("cs-theme", isDark ? "light" : "dark");
   });
 </script>
 {% endblock %}

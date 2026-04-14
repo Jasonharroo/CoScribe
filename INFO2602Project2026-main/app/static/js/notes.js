@@ -8,21 +8,35 @@ const publicToggle = document.getElementById("notePublicToggle");
 const visibilityText = document.getElementById("noteVisibilityText");
 
 /* Theme */
-(function initTheme() {
-  if (localStorage.getItem("cs-theme") === "dark") {
-    APP?.setAttribute("data-theme", "dark");
+function updateLogoForTheme(isDark) {
+  const logo = document.querySelector(".cs-logo-img");
+  if (logo) {
+    const filename = isDark ? 'dlogo.png' : 'logo.png';
+    const timestamp = new Date().getTime();
+    logo.src = `/static/img/${filename}?v=${timestamp}`;
+    logo.style.display = 'block';
   }
-})();
+}
+
+function applyTheme(isDark) {
+  if (isDark) {
+    APP?.setAttribute("data-theme", "dark");
+  } else {
+    APP?.removeAttribute("data-theme");
+  }
+  updateLogoForTheme(isDark);
+}
+
+// Apply theme on page load
+const savedTheme = localStorage.getItem("cs-theme");
+if (savedTheme === "dark") {
+  applyTheme(true);
+}
 
 document.getElementById("themeBtn")?.addEventListener("click", () => {
-  const dark = APP?.getAttribute("data-theme") === "dark";
-  if (dark) {
-    APP?.removeAttribute("data-theme");
-    localStorage.setItem("cs-theme", "light");
-  } else {
-    APP?.setAttribute("data-theme", "dark");
-    localStorage.setItem("cs-theme", "dark");
-  }
+  const isDark = APP?.getAttribute("data-theme") === "dark";
+  applyTheme(!isDark);
+  localStorage.setItem("cs-theme", isDark ? "light" : "dark");
 });
 
 /* Panels */

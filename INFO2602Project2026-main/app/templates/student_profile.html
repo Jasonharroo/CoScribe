@@ -716,18 +716,35 @@
 
 <script>
   const root = document.getElementById("spRoot");
-  if (localStorage.getItem("cs-theme") === "dark") {
-    root.setAttribute("data-theme", "dark");
+  
+  function updateLogo(isDark) {
+    const logo = document.querySelector(".cs-logo-img");
+    if (logo) {
+      const filename = isDark ? 'dlogo.png' : 'logo.png';
+      const timestamp = new Date().getTime();
+      logo.src = `/static/img/${filename}?v=${timestamp}`;
+      logo.style.display = 'block';
+    }
+  }
+  
+  function applyTheme(isDark) {
+    if (isDark) {
+      root.setAttribute("data-theme", "dark");
+    } else {
+      root.removeAttribute("data-theme");
+    }
+    updateLogo(isDark);
+  }
+  
+  const savedTheme = localStorage.getItem("cs-theme");
+  if (savedTheme === "dark") {
+    applyTheme(true);
   }
 
   document.getElementById("themeBtn").addEventListener("click", () => {
-    const d = root.getAttribute("data-theme") === "dark";
-    if (d) {
-      root.removeAttribute("data-theme");
-    } else {
-      root.setAttribute("data-theme", "dark");
-    }
-    localStorage.setItem("cs-theme", d ? "light" : "dark");
+    const isDark = root.getAttribute("data-theme") === "dark";
+    applyTheme(!isDark);
+    localStorage.setItem("cs-theme", isDark ? "light" : "dark");
   });
 
   function showToast(msg, duration = 2400) {

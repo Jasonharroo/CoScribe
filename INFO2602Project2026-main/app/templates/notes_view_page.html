@@ -10,7 +10,7 @@ block external_css %}
 <style>
   #content {
     padding: 0 !important;
-    background: #f6f4f0 !important;
+    background: #f5f0e8 !important;
   }
   body {
     overflow-x: hidden;
@@ -21,8 +21,8 @@ block external_css %}
 {% endblock %} {% block internal_css %}
 <style>
   :root {
-    --bg: #f6f4f0;
-    --bg2: #edeae3;
+    --bg: #f5f0e8;
+    --bg2: #ede6d6;
     --white: #ffffff;
     --coral: #ff6b5b;
     --coral-dk: #e5503f;
@@ -42,8 +42,8 @@ block external_css %}
     --mono: "DM Mono", monospace;
   }
   [data-theme="dark"] {
-    --bg: #100e0b;
-    --bg2: #1a1814;
+    --bg: #141210;
+    --bg2: #1c1a16;
     --white: #1e1c17;
     --coral-lt: #241310;
     --ink: #f0ebe3;
@@ -320,19 +320,22 @@ block external_css %}
 
   .an-card {
     background: var(--white);
-    border-radius: var(--r-xl);
+    border: 1.5px solid var(--bg2);
+    border-radius: 14px;
     padding: 20px 22px;
     text-decoration: none;
     display: block;
-    box-shadow: var(--sh-sm);
     transition:
-      box-shadow var(--dur),
+      border-color var(--dur),
+      color var(--dur),
       transform 0.14s;
     position: relative;
+    color: var(--ink);
   }
   .an-card:hover {
-    box-shadow: var(--sh-md);
-    transform: translateY(-2px);
+    border-color: var(--coral);
+    color: var(--ink);
+    transform: translateY(-1px);
   }
   .an-card-course {
     display: inline-flex;
@@ -660,18 +663,35 @@ block external_css %}
 
 <script>
   const root = document.getElementById("anRoot");
-  if (localStorage.getItem("cs-theme") === "dark") {
-    root.setAttribute("data-theme", "dark");
+  
+  function updateLogo(isDark) {
+    const logo = document.querySelector(".cs-logo-img");
+    if (logo) {
+      const filename = isDark ? 'dlogo.png' : 'logo.png';
+      const timestamp = new Date().getTime();
+      logo.src = `/static/img/${filename}?v=${timestamp}`;
+      logo.style.display = 'block';
+    }
+  }
+  
+  function applyTheme(isDark) {
+    if (isDark) {
+      root.setAttribute("data-theme", "dark");
+    } else {
+      root.removeAttribute("data-theme");
+    }
+    updateLogo(isDark);
+  }
+  
+  const savedTheme = localStorage.getItem("cs-theme");
+  if (savedTheme === "dark") {
+    applyTheme(true);
   }
 
   document.getElementById("themeBtn").addEventListener("click", () => {
-    const d = root.getAttribute("data-theme") === "dark";
-    if (d) {
-      root.removeAttribute("data-theme");
-    } else {
-      root.setAttribute("data-theme", "dark");
-    }
-    localStorage.setItem("cs-theme", d ? "light" : "dark");
+    const isDark = root.getAttribute("data-theme") === "dark";
+    applyTheme(!isDark);
+    localStorage.setItem("cs-theme", isDark ? "light" : "dark");
   });
 
   const newNoteModal = document.getElementById("newNoteModal");

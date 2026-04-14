@@ -424,12 +424,7 @@ block external_css %}
         </span>
       </a>
 
-      <div class="sd-nav-tabs">
-        <a href="/app" class="sd-nav-tab">Home</a>
-        <a href="/notes" class="sd-nav-tab">Notes</a>
-        <a href="/students" class="sd-nav-tab active">Students</a>
-        <a href="/courses/" class="sd-nav-tab">Courses</a>
-      </div>
+
     </div>
 
     <div class="sd-nav-r">
@@ -546,18 +541,35 @@ block external_css %}
 
 <script>
   const root = document.getElementById("sdRoot");
-  if (localStorage.getItem("cs-theme") === "dark") {
-    root.setAttribute("data-theme", "dark");
-  }
-
-  document.getElementById("themeBtn").addEventListener("click", () => {
-    const d = root.getAttribute("data-theme") === "dark";
-    if (d) {
-      root.removeAttribute("data-theme");
-    } else {
-      root.setAttribute("data-theme", "dark");
+  
+  function updateLogo(isDark) {
+    const logo = document.querySelector(".cs-logo-img");
+    if (logo) {
+      const filename = isDark ? 'dlogo.png' : 'logo.png';
+      const timestamp = new Date().getTime();
+      logo.src = `/static/img/${filename}?v=${timestamp}`;
+      logo.style.display = 'block';
     }
-    localStorage.setItem("cs-theme", d ? "light" : "dark");
+  }
+  
+  function applyTheme(isDark) {
+    if (isDark) {
+      root.setAttribute("data-theme", "dark");
+    } else {
+      root.removeAttribute("data-theme");
+    }
+    updateLogo(isDark);
+  }
+  
+  const savedTheme = localStorage.getItem("cs-theme");
+  if (savedTheme === "dark") {
+    applyTheme(true);
+  }
+  
+  document.getElementById("themeBtn").addEventListener("click", () => {
+    const isDark = root.getAttribute("data-theme") === "dark";
+    applyTheme(!isDark);
+    localStorage.setItem("cs-theme", isDark ? "light" : "dark");
   });
 
   const COLOURS = [
