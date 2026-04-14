@@ -3,7 +3,7 @@ block external_css %}
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link
-  href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,700&family=DM+Mono:wght@400;500&display=swap"
+  href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Mono:wght@400;500&display=swap"
   rel="stylesheet"
 />
 {% endblock %} {% block additional_styles %}
@@ -14,49 +14,49 @@ block external_css %}
   }
   #content {
     padding: 0 !important;
-    background: #f6f4f0 !important;
+    background: #f5f0e8 !important;
   }
   body {
     overflow-x: hidden;
-    font-family: "Montserrat", sans-serif;
+    font-family: 'DM Sans', sans-serif;
   }
 </style>
 {% endblock %} {% block internal_css %}
 <style>
   :root {
-    --bg: #f6f4f0;
-    --bg2: #edeae3;
-    --white: #ffffff;
-    --coral: #ff6b5b;
-    --coral-dk: #e5503f;
-    --coral-lt: #fff0ee;
-    --ink: #17110d;
-    --ink2: #4a3f35;
-    --ink3: #9c9088;
+    --bg: #f5f0e8;
+    --bg2: #ede6d6;
+    --white: #fdfaf4;
+    --coral: #e05a47;
+    --coral-dk: #c0392b;
+    --coral-lt: #fbeae8;
+    --ink: #1a1208;
+    --ink2: #4a3f2f;
+    --ink3: #8a7e6f;
     --sh-sm: 0 2px 14px rgba(0, 0, 0, 0.07);
     --sh-md: 0 6px 30px rgba(0, 0, 0, 0.11);
     --sh-lg: 0 14px 50px rgba(0, 0, 0, 0.14);
-    --nav-bg: rgba(246, 244, 240, 0.93);
+    --nav-bg: rgba(245, 240, 232, 0.93);
     --nav-sh: 0 1px 0 rgba(0, 0, 0, 0.05), 0 4px 18px rgba(0, 0, 0, 0.06);
     --pill: 999px;
     --r-lg: 22px;
     --r-xl: 28px;
     --dur: 0.2s;
-    --font: "Montserrat", sans-serif;
-    --mono: "DM Mono", monospace;
+    --font: 'DM Sans', sans-serif;
+    --mono: 'DM Mono', monospace;
   }
 
   [data-theme="dark"] {
-    --bg: #100e0b;
-    --bg2: #1a1814;
-    --white: #1e1c17;
-    --coral-lt: #241310;
-    --ink: #f0ebe3;
-    --ink2: #c4b8ac;
-    --ink3: #786e64;
+    --bg: #141210;
+    --bg2: #1c1a16;
+    --white: #1e1b16;
+    --coral-lt: #2a1512;
+    --ink: #f0e8d8;
+    --ink2: #c8b89a;
+    --ink3: #7a6e5f;
     --sh-sm: 0 2px 14px rgba(0, 0, 0, 0.28);
     --sh-md: 0 6px 30px rgba(0, 0, 0, 0.38);
-    --nav-bg: rgba(16, 14, 11, 0.97);
+    --nav-bg: rgba(20, 18, 16, 0.97);
   }
 
   .ci-sun {
@@ -285,26 +285,23 @@ block external_css %}
 
   .sd-card {
     background: var(--white);
-    border-radius: var(--r-xl);
+    border: 1.5px solid var(--bg2);
+    border-radius: 14px;
     padding: 24px 20px;
     text-decoration: none;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 12px;
-    box-shadow: var(--sh-sm);
     transition:
-      box-shadow var(--dur),
+      border-color var(--dur),
       transform 0.14s;
     cursor: pointer;
     text-align: center;
   }
   .sd-card:hover {
-    box-shadow: var(--sh-md);
-    transform: translateY(-3px);
-  }
-  .sd-card:hover .sd-card-avatar {
-    transform: scale(1.06);
+    border-color: var(--coral);
+    transform: translateY(-1px);
   }
 
   .sd-card-avatar {
