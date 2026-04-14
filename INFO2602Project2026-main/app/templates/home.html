@@ -498,26 +498,21 @@ block external_css %}
         z-index: 300;
       "
     >
-      <div style="font-weight: 700; margin-bottom: 10px">
+      <div style="font-weight: 700; margin-bottom: 10px; color: var(--cs-ink)">
         Collaboration Requests
       </div>
-      <div id="notifList">Loading...</div>
+      <div id="notifList" style="max-height: 200px; overflow-y: auto">Loading...</div>
+      <div style="border-top: 1px solid var(--cs-border); margin: 10px -12px 0; padding: 10px 12px 0 12px">
+        <a href="/logout" style="display: flex; align-items: center; gap: 8px; padding: 10px; color: var(--cs-red); text-decoration: none; border-radius: 8px; transition: background 0.2s; font-weight: 600; font-size: 0.9rem" onmouseover="this.style.background='rgba(201, 68, 51, 0.1)'" onmouseout="this.style.background='transparent'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          <span>Logout</span>
+        </a>
+      </div>
     </div>
-
-    <a href="/logout" class="cs-icon-btn" title="Logout">
-      <svg
-        width="17"
-        height="17"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-        <polyline points="16 17 21 12 16 7" />
-        <line x1="21" y1="12" x2="9" y2="12" />
-      </svg>
-    </a>
   </div>
 </nav>
 
@@ -806,10 +801,22 @@ block external_css %}
     e.stopPropagation();
     if (!notifDropdown) return;
 
-    const isOpen = notifDropdown.style.display === "block";
-    notifDropdown.style.display = isOpen ? "none" : "block";
-
-    if (!isOpen) {
+    const isOpen = notifDropdown.classList.contains("dropdown-open");
+    
+    if (isOpen) {
+      notifDropdown.classList.remove("dropdown-open");
+      notifDropdown.classList.add("dropdown-close");
+      
+      // Wait for animation to finish before hiding
+      setTimeout(() => {
+        if (notifDropdown.classList.contains("dropdown-close")) {
+          notifDropdown.style.display = "none";
+          notifDropdown.classList.remove("dropdown-close");
+        }
+      }, 300);
+    } else {
+      notifDropdown.style.display = "block";
+      notifDropdown.classList.add("dropdown-open");
       await loadPendingRequests();
     }
   });
@@ -817,7 +824,17 @@ block external_css %}
   document.addEventListener("click", (e) => {
     if (!notifDropdown) return;
     if (!notifDropdown.contains(e.target) && !avatar?.contains(e.target)) {
-      notifDropdown.style.display = "none";
+      if (notifDropdown.classList.contains("dropdown-open")) {
+        notifDropdown.classList.remove("dropdown-open");
+        notifDropdown.classList.add("dropdown-close");
+        
+        setTimeout(() => {
+          if (notifDropdown.classList.contains("dropdown-close")) {
+            notifDropdown.style.display = "none";
+            notifDropdown.classList.remove("dropdown-close");
+          }
+        }, 300);
+      }
     }
   });
 </script>
