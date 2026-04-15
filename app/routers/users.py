@@ -12,7 +12,6 @@ from app.database import get_session
 def get_user_repo(db: Session = Depends(get_session)):
     return UserRepository(db)
 
-# API endpoint for listing users
 @api_router.get("/users", response_model=list[UserResponse])
 async def list_users(request: Request, db: SessionDep):
     user_repo = UserRepository(db)

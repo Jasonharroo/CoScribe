@@ -29,15 +29,12 @@ async def user_home_view(
     note_repo = NoteRepository(db)
     note_service = NoteService(note_repo)
 
-    # Notes owned by the current user
     own_notes = note_service.get_notes_by_owner(user.id)
 
-    # Pending collaboration requests should only be for notes I own
     own_note_ids = [n.id for n in own_notes]
     pending_requests = collab_service.get_pending_for_note_owner(own_note_ids)
     pending_count = len(pending_requests)
 
-    # Notes shared with me through accepted collaborations
     accepted_collabs = db.exec(
         select(Collaboration).where(
             Collaboration.user_id == user.id,
@@ -48,7 +45,6 @@ async def user_home_view(
     collab_note_ids = [c.note_id for c in accepted_collabs]
     collab_notes = note_service.get_notes_by_ids(collab_note_ids)
 
-    # Combine owned + shared notes without duplicates
     notes_map = {note.id: note for note in own_notes}
     for note in collab_notes:
         notes_map[note.id] = note

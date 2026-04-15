@@ -7,7 +7,6 @@ from app.repositories.user import UserRepository
 from app.utilities.flash import flash
 from . import router, templates
 
-# View route (loads the page)
 @router.get("/register", response_class=HTMLResponse)
 async def register_view(request: Request):
     return templates.TemplateResponse(
@@ -15,7 +14,6 @@ async def register_view(request: Request):
         name="register.html",
     )
 
-# Action route (performs an action)
 @router.post('/register', response_class=HTMLResponse, status_code=status.HTTP_201_CREATED)
 def signup_user(request:Request, db:SessionDep, 
     username: str = Form(),
