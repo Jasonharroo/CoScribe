@@ -3,7 +3,7 @@ requires = ["setuptools>=64.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "project-starter"
+name = "CoScribe"
 version = "0.0.1"
 description = "Starter repository for student's projects for info 2602"
 readme = "README.md"
